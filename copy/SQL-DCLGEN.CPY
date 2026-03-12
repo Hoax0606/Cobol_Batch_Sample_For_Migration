@@ -15,4 +15,3 @@
            05 SUM-TOT-OUT     PIC S9(15) COMP-3.
            05 SUM-NET-AMT     PIC S9(15) COMP-3.
            05 SUM-TOT-CNT     PIC S9(10) COMP-3.
-
