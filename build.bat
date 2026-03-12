@@ -39,63 +39,63 @@ echo    DB CONN : %DB_CONN%
 echo ============================================================
 echo.
 
-:: ============================================================
-:: 2. PHASE 1 : FILE to FILE (Standard COBOL)
-:: ============================================================
-echo [1/4] PHASE 1: [FILE to FILE] START
-echo ------------------------------------------------------------
-echo  ^> Compiling: %SRC_DIR%\PGM-PHASE1.CBL...
-
-cobc -x -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE1.exe" "%SRC_DIR%\PGM-PHASE1.CBL"
-if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
-
-:: File needed for PHASE-1
-set "DD_INFILE_VAR=%RAW_DIR%\RAW_TRX_DATA.txt"
-set "DD_OUTFILE_VAR=%DATA_DIR%\CLEANSED_DATA.txt"
-set "DD_ERRFILE_VAR=%DATA_DIR%\ERROR_DATA.txt"
-
-echo  ^> Running %BIN_DIR%\PGM-PHASE1.exe...
-echo.
-"%BIN_DIR%\PGM-PHASE1.exe"
-echo.
-
-:: ============================================================
-:: 3. PHASE 2 : FILE to DB (SQL COBOL)
-:: ============================================================
-echo [2/4] PHASE 2: [FILE to DATABASE] START
-echo ------------------------------------------------------------
-echo  ^> Precompiling %SRC_DIR%\PGM-PHASE2.CBL...
-gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE2.CBL" -o "%SRC_DIR%\PGM-PHASE2.COB"
-if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
-
-echo  ^> Compiling %SRC_DIR%\PGM-PHASE2.COB...
-
-cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE2.exe" "%SRC_DIR%\PGM-PHASE2.COB" -L"%BIN_DIR%" -lsqlite3
-if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
-
-set "DD_INFILE_VAR=%DATA_DIR%\CLEANSED_DATA.txt"
-echo  ^> Running %BIN_DIR%\PGM-PHASE2.exe...
-echo.
-"%BIN_DIR%\PGM-PHASE2.exe"
-echo.
-
 @REM :: ============================================================
-@REM :: 4. PHASE 3 : DB to DB (SQL COBOL)
+@REM :: 2. PHASE 1 : FILE to FILE (Standard COBOL)
 @REM :: ============================================================
-@REM echo [3/4] PHASE 3: [DATABASE to DATABASE] START
+@REM echo [1/4] PHASE 1: [FILE to FILE] START
 @REM echo ------------------------------------------------------------
-@REM echo  ^> Precompiling %SRC_DIR%\PGM-PHASE3.CBL...
-@REM gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE3.CBL" -o "%SRC_DIR%\PGM-PHASE3.COB"
+@REM echo  ^> Compiling: %SRC_DIR%\PGM-PHASE1.CBL...
+
+@REM cobc -x -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE1.exe" "%SRC_DIR%\PGM-PHASE1.CBL"
 @REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
-@REM echo  ^> Compiling %SRC_DIR%\PGM-PHASE3.COB...
-@REM cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE3.exe" "%SRC_DIR%\PGM-PHASE3.COB" -L"%BIN_DIR%" -lsqlite3
+@REM :: File needed for PHASE-1
+@REM set "DD_INFILE_VAR=%RAW_DIR%\RAW_TRX_DATA.txt"
+@REM set "DD_OUTFILE_VAR=%DATA_DIR%\CLEANSED_DATA.txt"
+@REM set "DD_ERRFILE_VAR=%DATA_DIR%\ERROR_DATA.txt"
+
+@REM echo  ^> Running %BIN_DIR%\PGM-PHASE1.exe...
+@REM echo.
+@REM "%BIN_DIR%\PGM-PHASE1.exe"
+@REM echo.
+
+@REM :: ============================================================
+@REM :: 3. PHASE 2 : FILE to DB (SQL COBOL)
+@REM :: ============================================================
+@REM echo [2/4] PHASE 2: [FILE to DATABASE] START
+@REM echo ------------------------------------------------------------
+@REM echo  ^> Precompiling %SRC_DIR%\PGM-PHASE2.CBL...
+@REM gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE2.CBL" -o "%SRC_DIR%\PGM-PHASE2.COB"
 @REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
-@REM echo  ^> Running %BIN_DIR%\PGM-PHASE3.exe...
+@REM echo  ^> Compiling %SRC_DIR%\PGM-PHASE2.COB...
+
+@REM cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE2.exe" "%SRC_DIR%\PGM-PHASE2.COB" -L"%BIN_DIR%" -lsqlite3
+@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+
+@REM set "DD_INFILE_VAR=%DATA_DIR%\CLEANSED_DATA.txt"
+@REM echo  ^> Running %BIN_DIR%\PGM-PHASE2.exe...
 @REM echo.
-@REM "%BIN_DIR%\PGM-PHASE3.exe"
+@REM "%BIN_DIR%\PGM-PHASE2.exe"
 @REM echo.
+
+:: ============================================================
+:: 4. PHASE 3 : DB to DB (SQL COBOL)
+:: ============================================================
+echo [3/4] PHASE 3: [DATABASE to DATABASE] START
+echo ------------------------------------------------------------
+echo  ^> Precompiling %SRC_DIR%\PGM-PHASE3.CBL...
+gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE3.CBL" -o "%SRC_DIR%\PGM-PHASE3.COB"
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+
+echo  ^> Compiling %SRC_DIR%\PGM-PHASE3.COB...
+cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE3.exe" "%SRC_DIR%\PGM-PHASE3.COB" -L"%BIN_DIR%" -lsqlite3
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+
+echo  ^> Running %BIN_DIR%\PGM-PHASE3.exe...
+echo.
+"%BIN_DIR%\PGM-PHASE3.exe"
+echo.
 
 @REM :: ============================================================
 @REM :: 5. PHASE 4 : DB to FILE (SQL COBOL)

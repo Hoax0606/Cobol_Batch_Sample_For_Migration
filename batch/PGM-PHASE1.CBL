@@ -80,11 +80,6 @@
       * --- COMP 계열 다양한 타입 사용 예시 ---
        01  WS-WORK-AREAS.
            05 WS-MOD-WORK             PIC 9(10) COMP     VALUE 0.
-           05 WS-FEE-WORK             PIC S9(12) COMP-3  VALUE 0.
-           05 WS-FLOAT-WORK           COMP-1             VALUE 0.
-           05 WS-DOUBLE-WORK          COMP-2             VALUE 0.
-           05 WS-BIN-WORK             PIC 9(9)  COMP-4   VALUE 0.
-           05 WS-NATIVE-WORK          PIC 9(9)  COMP-5   VALUE 0.
 
       * --- STRING 조립용 로그 버퍼 ---
        01  WS-LOG-BUFFER              PIC X(80)  VALUE SPACES.
