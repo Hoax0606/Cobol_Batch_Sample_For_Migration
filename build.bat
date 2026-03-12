@@ -15,8 +15,11 @@ set "COB_LIBRARY_PATH=%BIN_DIR%"
 ::set "GIX_LIB=C:\GixSQL\lib\copy"
 
 :: DB Setting
+:: DB Setting
 set GIXSQL_DEFAULT_DRIVER=%DB_TYPE%
 set GIXSQL_DB_CONN=%DB_CONN%
+set GIXSQL_USER=gixsql
+set GIXSQL_PWD=gixsql
 
 :: create data_createdFromBatch
 if not exist "%DATA_DIR%" (
@@ -56,25 +59,25 @@ echo.
 "%BIN_DIR%\PGM-PHASE1.exe"
 echo.
 
-@REM :: ============================================================
-@REM :: 3. PHASE 2 : FILE to DB (SQL COBOL)
-@REM :: ============================================================
-@REM echo [2/4] PHASE 2: [FILE to DATABASE] START
-@REM echo ------------------------------------------------------------
-@REM echo  ^> Precompiling %SRC_DIR%\PGM-PHASE2.CBL...
-@REM gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE2.CBL" -o "%SRC_DIR%\PGM-PHASE2.COB"
-@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+:: ============================================================
+:: 3. PHASE 2 : FILE to DB (SQL COBOL)
+:: ============================================================
+echo [2/4] PHASE 2: [FILE to DATABASE] START
+echo ------------------------------------------------------------
+echo  ^> Precompiling %SRC_DIR%\PGM-PHASE2.CBL...
+gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE2.CBL" -o "%SRC_DIR%\PGM-PHASE2.COB"
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
-@REM echo  ^> Compiling %SRC_DIR%\PGM-PHASE2.COB...
+echo  ^> Compiling %SRC_DIR%\PGM-PHASE2.COB...
 
-@REM cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE2.exe" "%SRC_DIR%\PGM-PHASE2.COB" -L"%BIN_DIR%" -lsqlite3
-@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE2.exe" "%SRC_DIR%\PGM-PHASE2.COB" -L"%BIN_DIR%" -lsqlite3
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
-@REM set " =%DATA_DIR%\CLEANSED_DATA.txt"
-@REM echo  ^> Running %BIN_DIR%\PGM-PHASE2.exe...
-@REM echo.
-@REM "%BIN_DIR%\PGM-PHASE2.exe"
-@REM echo.
+set "DD_INFILE_VAR=%DATA_DIR%\CLEANSED_DATA.txt"
+echo  ^> Running %BIN_DIR%\PGM-PHASE2.exe...
+echo.
+"%BIN_DIR%\PGM-PHASE2.exe"
+echo.
 
 @REM :: ============================================================
 @REM :: 4. PHASE 3 : DB to DB (SQL COBOL)

@@ -280,12 +280,14 @@
            SET WS-VALID TO TRUE.
            
            MOVE IN-REC TO TRX-RECORD.
+
       *    INSPECT: スペース個数カウント (문자열 품질 확인 예시)
            MOVE 0 TO WS-INSPECT-CNT.
            INSPECT TRX-RECORD
                TALLYING WS-INSPECT-CNT FOR ALL SPACES.
+           
 
-           IF WS-INSPECT-CNT NOT EQUAL 6 THEN
+           IF WS-INSPECT-CNT NOT EQUAL 8 THEN
               PERFORM VALIDATE-ERR-FIELD-000
            ELSE
               MOVE SPACES TO TRX-RECORD

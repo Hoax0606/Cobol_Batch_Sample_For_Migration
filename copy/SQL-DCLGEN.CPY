@@ -8,6 +8,12 @@
            05 STG-FEE-AMT    PIC S9(12) COMP-3.
            05 STG-PROC-STAT  PIC X(1).
 
+       01  DCL-TB-INST-MASTER.
+           05 INST-MAST-CD       PIC X(4).
+           05 INST-MAST-NAME     PIC X(20).
+           05 INST-MAST-STAT     PIC X(1).
+           05 INST-MAST-FEE-RATE PIC S9(3)V9(4) COMP-3.
+
        01  DCL-TB-NET-SUMMARY.
            05 SUM-SETTLE-DATE PIC X(8).
            05 SUM-INST-CD     PIC X(4).
