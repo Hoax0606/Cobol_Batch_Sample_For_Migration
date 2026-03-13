@@ -5,6 +5,8 @@
       * 3. Internal SORT (SORT/RELEASE/RETURN) 로 기관코드 순 정렬
       * 4. STRING/UNSTRING 을 활용한 레코드 파싱 및 로그 조립
       * 5. REDEFINES 및 공통 로그(ERR-LOG) 처리
+      * 6. 배치 이력 기록은 PGM-BLOGSVR(서브프로그램)에 위임
+      *    EXEC SQL 제거 → gixpp 불필요, cobc 직접 컴파일
       *================================================================*
       *================================================================*
       * IDENTIFICATION                DIVISION.
@@ -57,6 +59,22 @@
            COPY FILE-CTRL.
            COPY TRX-REC.
 
+      * --- PGM-BLOGSVR 호출용 파라미터 블록 ---
+      *     배치 이력(TB_BATCH_LOG) 기록은 서브프로그램에 위임
+      *     DB 접속 정보는 PGM-BLOGSVR 내부에서 환경변수로 직접 취득
+       01  BLG-PARAMS.
+           05 BLG-ACTION              PIC X(5)   VALUE SPACES.
+           05 BLG-PGM-ID              PIC X(10)  VALUE SPACES.
+           05 BLG-BIZ-DATE            PIC X(8)   VALUE SPACES.
+           05 BLG-START-DT            PIC X(14)  VALUE SPACES.
+           05 BLG-END-DT              PIC X(14)  VALUE SPACES.
+           05 BLG-STAT                PIC X(1)   VALUE SPACES.
+           05 BLG-PROC-CNT            PIC 9(10)  VALUE 0.
+           05 BLG-ERR-CNT             PIC 9(10)  VALUE 0.
+           05 BLG-REMARK              PIC X(100) VALUE SPACES.
+           05 BLG-BATCH-ID            PIC S9(10) COMP-3 VALUE 0.
+           05 BLG-RETURN-CODE         PIC 9(4)   VALUE 0.
+
        01  WS-FILE-STATUS.
            05 WS-IN-STAT              PIC X(2).
            05 WS-OUT-STAT             PIC X(2).
@@ -77,7 +95,7 @@
            05 WS-CALC-AMT             PIC 9(15)  VALUE 0.
            05 WS-ERR-CNT              PIC 9(10)  VALUE 0.
 
-      * --- COMP 계열 다양한 타입 사용 예시 ---
+      * --- 진행 로그용 나머지 카운터 ---
        01  WS-WORK-AREAS.
            05 WS-MOD-WORK             PIC 9(10) COMP     VALUE 0.
 
@@ -108,7 +126,7 @@
       *================================================================*
       * PROCEDURE                     DIVISION.
       *================================================================*
-       PROCEDURE DIVISION.
+       PROCEDURE                      DIVISION.
       *----------------------------------------------------------------*
       * MAIN                          SECTION.
       *----------------------------------------------------------------*
@@ -130,8 +148,11 @@
       *----------------------------------------------------------------*
        INIT                           SECTION.
        INIT-000.
-           MOVE WS-PHASE-ID         TO SYS-JOB-ID.
-           MOVE FUNCTION CURRENT-DATE(1:8) TO SYS-BIZ-DATE.
+           MOVE WS-PHASE-ID                 TO SYS-JOB-ID.
+           MOVE FUNCTION CURRENT-DATE(1:8)  TO SYS-BIZ-DATE.
+
+      * --- 배치 이력 START 기록 (PGM-BLOGSVR 위임) ---
+           PERFORM BLOGSVR-START-000.
 
            OPEN INPUT  IN-FILE
                 OUTPUT OUT-FILE
@@ -275,13 +296,11 @@
            SET WS-VALID TO TRUE.
            
            MOVE IN-REC TO TRX-RECORD.
-
       *    INSPECT: スペース個数カウント (문자열 품질 확인 예시)
            MOVE 0 TO WS-INSPECT-CNT.
            INSPECT TRX-RECORD
                TALLYING WS-INSPECT-CNT FOR ALL SPACES.
            
-
            IF WS-INSPECT-CNT NOT EQUAL 8 THEN
               PERFORM VALIDATE-ERR-FIELD-000
            ELSE
@@ -454,6 +473,9 @@
            DISPLAY ' > VALID AMOUNT: ' WS-CALC-AMT.
            DISPLAY ' > ERROR COUNT : ' WS-ERR-CNT.
            DISPLAY ' > ====================================='.
+
+      * --- 배치 이력 END 기록 (PGM-BLOGSVR 위임) ---
+           PERFORM BLOGSVR-END-000.
        FINALIZE-999.
            EXIT.
 
@@ -467,6 +489,54 @@
            DISPLAY '*** SYSTEM ERROR OCCURRED ***'.
            DISPLAY 'PGM: ' ERR-PGM-ID ' | MSG: ' ERR-DESCRIPTION.
        ERROR-LOG-999.
+           EXIT.
+      *----------------------------------------------------------------*
+      * BLOGSVR-START                 SECTION.
+      *----------------------------------------------------------------*
+       BLOGSVR-START                  SECTION.
+       BLOGSVR-START-000.
+           MOVE WS-PROG-NAME          TO BLG-PGM-ID.
+           MOVE SYS-BIZ-DATE          TO BLG-BIZ-DATE.
+           MOVE 'PHASE1 STARTED'      TO BLG-REMARK.
+           MOVE 'START'               TO BLG-ACTION.
+
+           CALL 'PGM-BLOGSVR' USING BLG-PARAMS.
+
+           IF BLG-RETURN-CODE NOT = 0 THEN
+               DISPLAY '> [WARN] BLOGSVR START FAILED. RC='
+                       BLG-RETURN-CODE
+           ELSE
+               CONTINUE
+           END-IF.
+       BLOGSVR-START-999.
+           EXIT.
+
+      *----------------------------------------------------------------*
+      * BLOGSVR-END                   SECTION.
+      *----------------------------------------------------------------*
+       BLOGSVR-END                    SECTION.
+       BLOGSVR-END-000.
+           MOVE WS-CALC-CNT           TO BLG-PROC-CNT.
+           MOVE WS-ERR-CNT            TO BLG-ERR-CNT.
+           MOVE 'END  '               TO BLG-ACTION.
+
+           IF WS-ERR-CNT > 0 THEN
+               MOVE 'E'               TO BLG-STAT
+               MOVE 'PHASE1 COMPLETED WITH ERRORS' TO BLG-REMARK
+           ELSE
+               MOVE 'S'               TO BLG-STAT
+               MOVE 'PHASE1 COMPLETED SUCCESSFULLY' TO BLG-REMARK
+           END-IF.
+
+           CALL 'PGM-BLOGSVR' USING BLG-PARAMS.
+
+           IF BLG-RETURN-CODE NOT = 0 THEN
+               DISPLAY '> [WARN] BLOGSVR END FAILED. RC='
+                       BLG-RETURN-CODE
+           ELSE
+               CONTINUE
+           END-IF.
+       BLOGSVR-END-999.
            EXIT.
       *================================================================*
       * END OF PGM-PHASE1

@@ -73,6 +73,9 @@
            05 WS-USER                 PIC X(30)  VALUE SPACES.
            05 WS-PWD                  PIC X(30)  VALUE SPACES.
 
+      * --- 배치 시작일시 ---
+       01  WS-START-DATETIME          PIC X(14)  VALUE SPACES.
+
       * --- 77 레벨: 독립 단일 항목 ---
        77  WS-PROG-NAME               PIC X(10)  VALUE 'PGM-PHASE2'.
        77  WS-PHASE-ID                PIC X(8)   VALUE 'PHASE2'.
@@ -106,6 +109,7 @@
       * --- 시스템 공통 변수 초기화 ---
            MOVE WS-PHASE-ID                 TO SYS-JOB-ID.
            MOVE FUNCTION CURRENT-DATE(1:8)  TO SYS-BIZ-DATE.
+           MOVE FUNCTION CURRENT-DATE(1:14) TO WS-START-DATETIME.
 
       * --- 환경변수에서 DB 접속 정보 취득 ---
            ACCEPT WS-DATASRC      FROM ENVIRONMENT 'GIXSQL_DB_CONN'.
@@ -145,6 +149,9 @@
            ELSE
                CONTINUE
            END-IF.
+
+      * --- 배치 이력 시작 기록 ---
+           PERFORM BATCHLOG-START-000.
 
       * --- 스테이징 테이블 사전 클리어 (재실행 멱등성) ---
            EXEC SQL DELETE FROM TB_STG_TRX END-EXEC.
@@ -303,6 +310,11 @@
            END-IF.
 
            CLOSE IN-FILE.
+
+      * --- 배치 이력 종료 기록 ---
+           PERFORM BATCHLOG-END-000.
+           EXEC SQL COMMIT            END-EXEC.
+
            EXEC SQL DISCONNECT CURRENT END-EXEC.
 
            DISPLAY ' > ========= PGM-PHASE2 RESULT ========='.
@@ -339,6 +351,85 @@
            DISPLAY '*** DB ERROR *** SEQ: ' STG-TRX-SEQ.
            DISPLAY 'SQLCODE: ' ERR-SQLCODE ' | MSG: ' ERR-DESCRIPTION.
        DB-ERROR-999.
+           EXIT.
+      *----------------------------------------------------------------*
+      * BATCHLOG-START                SECTION.
+      *----------------------------------------------------------------*
+       BATCHLOG-START                 SECTION.
+       BATCHLOG-START-000.
+           MOVE WS-PROG-NAME          TO BLG-PGM-ID.
+           MOVE SYS-BIZ-DATE          TO BLG-BIZ-DATE.
+           MOVE WS-START-DATETIME     TO BLG-START-DT.
+           MOVE SPACES                TO BLG-END-DT.
+           MOVE 'R'                   TO BLG-STAT.
+           MOVE 0                     TO BLG-PROC-CNT.
+           MOVE 0                     TO BLG-ERR-CNT.
+           MOVE 'PHASE2 STARTED'      TO BLG-REMARK.
+
+           EXEC SQL
+               INSERT INTO TB_BATCH_LOG
+                      (PGM_ID,    BIZ_DATE,    START_DT,
+                       END_DT,    STAT,        PROC_CNT,
+                       ERR_CNT,   REMARK)
+               VALUES (:BLG-PGM-ID,   :BLG-BIZ-DATE, :BLG-START-DT,
+                       :BLG-END-DT,   :BLG-STAT,     :BLG-PROC-CNT,
+                       :BLG-ERR-CNT,  :BLG-REMARK)
+           END-EXEC.
+
+           IF SQLCODE = 0 THEN
+               EXEC SQL COMMIT        END-EXEC
+               EXEC SQL
+                   SELECT MAX(BATCH_ID)
+                     INTO :BLG-BATCH-ID
+                     FROM TB_BATCH_LOG
+                    WHERE PGM_ID   = :BLG-PGM-ID
+                      AND BIZ_DATE = :BLG-BIZ-DATE
+               END-EXEC
+           ELSE
+               MOVE SQLCODE           TO ERR-SQLCODE
+               MOVE 'BATCH_LOG START INSERT ERROR' TO ERR-DESCRIPTION
+               PERFORM DB-ERROR-000
+           END-IF.
+
+       BATCHLOG-START-999.
+           EXIT.
+
+      *----------------------------------------------------------------*
+      * BATCHLOG-END                  SECTION.
+      *----------------------------------------------------------------*
+       BATCHLOG-END                   SECTION.
+       BATCHLOG-END-000.
+           MOVE FUNCTION CURRENT-DATE(1:14) TO BLG-END-DT.
+           MOVE WS-INSERT-CNT         TO BLG-PROC-CNT.
+           MOVE WS-ERR-CNT            TO BLG-ERR-CNT.
+
+           IF WS-ERR-CNT > 0 THEN
+               MOVE 'E'               TO BLG-STAT
+               MOVE 'PHASE2 COMPLETED WITH ERRORS' TO BLG-REMARK
+           ELSE
+               MOVE 'S'               TO BLG-STAT
+               MOVE 'PHASE2 COMPLETED SUCCESSFULLY' TO BLG-REMARK
+           END-IF.
+
+           EXEC SQL
+               UPDATE TB_BATCH_LOG
+                  SET END_DT   = :BLG-END-DT,
+                      STAT     = :BLG-STAT,
+                      PROC_CNT = :BLG-PROC-CNT,
+                      ERR_CNT  = :BLG-ERR-CNT,
+                      REMARK   = :BLG-REMARK
+                WHERE BATCH_ID = :BLG-BATCH-ID
+           END-EXEC.
+
+           IF SQLCODE NOT = 0 THEN
+               MOVE SQLCODE           TO ERR-SQLCODE
+               MOVE 'BATCH_LOG END UPDATE ERROR' TO ERR-DESCRIPTION
+               PERFORM DB-ERROR-000
+           ELSE
+               CONTINUE
+           END-IF.
+
+       BATCHLOG-END-999.
            EXIT.
       *================================================================*
       * END OF PGM-PHASE2

@@ -12,9 +12,7 @@ set "DB_CONN=sqlite://SB_VaF_Education_JP.db"
 
 set "PATH=%BIN_DIR%;%PATH%"
 set "COB_LIBRARY_PATH=%BIN_DIR%"
-::set "GIX_LIB=C:\GixSQL\lib\copy"
 
-:: DB Setting
 :: DB Setting
 set GIXSQL_DEFAULT_DRIVER=%DB_TYPE%
 set GIXSQL_DB_CONN=%DB_CONN%
@@ -39,14 +37,32 @@ echo    DB CONN : %DB_CONN%
 echo ============================================================
 echo.
 
+:: ============================================================
+@REM :: 1-0. BLOGSVR : ?? ?? ?????? (PHASE1?? ?? ??)
 @REM :: ============================================================
-@REM :: 2. PHASE 1 : FILE to FILE (Standard COBOL)
+@REM echo [0/4] BLOGSVR: [BATCH LOG SERVICE] BUILD
+@REM echo ------------------------------------------------------------
+@REM echo  ^> Precompiling %SRC_DIR%\PGM-BLOGSVR.CBL...
+@REM gixpp -e -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-BLOGSVR.CBL" -o "%SRC_DIR%\PGM-BLOGSVR.COB"
+@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+
+@REM echo  ^> Compiling: %SRC_DIR%\PGM-BLOGSVR.COB...
+@REM cobc -m -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-BLOGSVR.dll" "%SRC_DIR%\PGM-BLOGSVR.COB" -L"%BIN_DIR%" -lsqlite3
+@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+@REM echo  ^> BLOGSVR build OK.
+@REM echo.
+
+@REM :: ============================================================
+@REM :: 2. PHASE 1 : FILE to FILE (EXEC SQL ??, gixpp ???)
+@REM ::    cobc ?? ??? / CALL 'PGM-BLOGSVR' ??? ?? BIN_DIR ??
 @REM :: ============================================================
 @REM echo [1/4] PHASE 1: [FILE to FILE] START
 @REM echo ------------------------------------------------------------
 @REM echo  ^> Compiling: %SRC_DIR%\PGM-PHASE1.CBL...
 
 @REM cobc -x -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE1.exe" "%SRC_DIR%\PGM-PHASE1.CBL"
+@REM @REM cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE1.exe" "%SRC_DIR%\PGM-PHASE1.CBL" -L"%BIN_DIR%"
+
 @REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
 @REM :: File needed for PHASE-1
@@ -116,20 +132,18 @@ echo.
 @REM "%BIN_DIR%\PGM-PHASE4.exe"
 @REM echo.
 
-@REM :: ============================================================
-@REM :: End of Batch
-@REM :: ============================================================
-@REM echo ============================================================
-@REM echo    ALL BATCH PROGRAMS COMPLETED SUCCESSFULLY
-@REM echo ============================================================
-@REM pause
-@REM exit /b 0
+:: ============================================================
+:: End of Batch
+:: ============================================================
+echo ============================================================
+echo    ALL BATCH PROGRAMS COMPLETED SUCCESSFULLY
+echo ============================================================
+exit /b 0
 
-@REM :ERROR_EXIT
-@REM echo.
-@REM echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-@REM echo  [FATAL ERROR] FAILED AT %TIME%
-@REM echo  CHECK COMPILER LOGS IN THE BATCH FOLDER.
-@REM echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-@REM pause
-@REM exit /b 1
+:ERROR_EXIT
+echo.
+echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+echo  [FATAL ERROR] FAILED AT %TIME%
+echo  CHECK COMPILER LOGS IN THE BATCH FOLDER.
+echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+exit /b 1
