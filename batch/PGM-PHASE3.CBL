@@ -95,7 +95,8 @@
 
       * --- 인메모리 집계 테이블 (기관별 NET 집계) ---
        01  NETTING-TABLE.
-           05 NET-ENTRY OCCURS 1000 TIMES INDEXED BY NET-IDX.
+           05 NET-ENTRY OCCURS 1000 TIMES
+                        INDEXED BY NET-IDX.
               10 NET-INST-CD          PIC X(4).
               10 NET-TOT-IN           PIC S9(15) COMP-3 VALUE 0.
               10 NET-TOT-OUT          PIC S9(15) COMP-3 VALUE 0.
@@ -209,6 +210,10 @@
 
       * --- 배치 이력 시작 기록 ---
            PERFORM BATCHLOG-START-000.
+
+      * --- TB_TRX_DETAIL 사전 클리어 (재실행 멱등성) ---
+           PERFORM DELETE-TRX-DETAIL-000.
+           EXEC SQL COMMIT            END-EXEC.
 
       * --- C-STG-TRX 커서 오픈 ---
            EXEC SQL OPEN C-STG-TRX    END-EXEC.
@@ -363,37 +368,45 @@
       * AGGREGATE-MEMORY              SECTION.
       *----------------------------------------------------------------*
       * 인메모리 NETTING-TABLE 기관별 집계 반영
+      *
+      * 신규 삽입 정책:
+      *   WS-NET-MAX-IDX+1 위치에 추가 (정렬 불필요)
       *----------------------------------------------------------------*
        AGGREGATE-MEMORY               SECTION.
        AGGREGATE-MEMORY-000.
            SET WS-NOT-FOUND           TO TRUE.
 
-           PERFORM VARYING NET-IDX FROM 1 BY 1 
-                     UNTIL NET-IDX > WS-NET-MAX-IDX 
-                      OR WS-FOUND
+      *    순차탐색: 유효 범위(1~WS-NET-MAX-IDX)에서 기관코드 검색
+           PERFORM VARYING NET-IDX FROM 1 BY 1
+                     UNTIL NET-IDX > WS-NET-MAX-IDX
+                        OR WS-FOUND
                IF NET-INST-CD(NET-IDX) = STG-INST-CD THEN
-                   SET WS-FOUND       TO TRUE
-                   ADD 1              TO NET-CNT(NET-IDX)
-                   ADD WS-FEE-WORK    TO NET-TOT-FEE(NET-IDX)
+                   SET WS-FOUND           TO TRUE
+                   ADD 1                  TO NET-CNT(NET-IDX)
+                   ADD WS-FEE-WORK        TO NET-TOT-FEE(NET-IDX)
                    IF STG-TRX-TYPE = 'I' THEN
-                       ADD STG-TRX-AMT TO NET-TOT-IN(NET-IDX)
+                       ADD STG-TRX-AMT    TO NET-TOT-IN(NET-IDX)
                    ELSE
-                       ADD STG-TRX-AMT TO NET-TOT-OUT(NET-IDX)
+                       ADD STG-TRX-AMT    TO NET-TOT-OUT(NET-IDX)
                    END-IF
                ELSE
                    CONTINUE
                END-IF
            END-PERFORM.
 
+      *    미등록 기관: 末尾에 신규 엔트리 추가
            IF WS-NOT-FOUND THEN
                ADD 1                  TO WS-NET-MAX-IDX
-               MOVE STG-INST-CD       TO NET-INST-CD(WS-NET-MAX-IDX)
-               MOVE 1                 TO NET-CNT(WS-NET-MAX-IDX)
-               MOVE WS-FEE-WORK       TO NET-TOT-FEE(WS-NET-MAX-IDX)
+               SET NET-IDX            TO WS-NET-MAX-IDX
+               MOVE STG-INST-CD       TO NET-INST-CD(NET-IDX)
+               MOVE 1                 TO NET-CNT(NET-IDX)
+               MOVE WS-FEE-WORK       TO NET-TOT-FEE(NET-IDX)
+               MOVE 0                 TO NET-TOT-IN(NET-IDX)
+               MOVE 0                 TO NET-TOT-OUT(NET-IDX)
                IF STG-TRX-TYPE = 'I' THEN
-                   ADD STG-TRX-AMT    TO NET-TOT-IN(WS-NET-MAX-IDX)
+                   ADD STG-TRX-AMT    TO NET-TOT-IN(NET-IDX)
                ELSE
-                   ADD STG-TRX-AMT    TO NET-TOT-OUT(WS-NET-MAX-IDX)
+                   ADD STG-TRX-AMT    TO NET-TOT-OUT(NET-IDX)
                END-IF
            ELSE
                CONTINUE
@@ -462,7 +475,8 @@
 
       * --- ① TB_INST_DAILY_STAT : 인메모리 집계 → DB 저장 ---
            PERFORM DELETE-INST-STAT-000.
-           
+           EXEC SQL COMMIT            END-EXEC.
+
            PERFORM INSERT-INST-STAT-000 VARYING NET-IDX FROM 1 BY 1
                      UNTIL NET-IDX > WS-NET-MAX-IDX.
 
@@ -493,6 +507,31 @@
            EXEC SQL DISCONNECT CURRENT END-EXEC.
 
        FINALIZE-999.
+           EXIT.
+
+      *----------------------------------------------------------------*
+      * DELETE-TRX-DETAIL             SECTION.
+      *----------------------------------------------------------------*
+      * 당일 TB_TRX_DETAIL 삭제 (재실행 멱등성 확보)
+      *----------------------------------------------------------------*
+       DELETE-TRX-DETAIL              SECTION.
+       DELETE-TRX-DETAIL-000.
+           MOVE SYS-BIZ-DATE          TO DTL-SETTLE-DATE.
+
+           EXEC SQL
+               DELETE FROM TB_TRX_DETAIL
+                WHERE SETTLE_DATE = :DTL-SETTLE-DATE
+           END-EXEC.
+
+           IF SQLCODE NOT = 0 AND SQLCODE NOT = 100 THEN
+               MOVE SQLCODE           TO ERR-SQLCODE
+               MOVE 'TRX_DETAIL DELETE ERROR' TO ERR-DESCRIPTION
+               PERFORM DB-ERROR-000
+           ELSE
+               CONTINUE
+           END-IF.
+
+       DELETE-TRX-DETAIL-999.
            EXIT.
 
       *----------------------------------------------------------------*
@@ -600,6 +639,7 @@
                MOVE SQLCODE           TO ERR-SQLCODE
                MOVE 'JOIN CURSOR OPEN ERROR' TO ERR-DESCRIPTION
                PERFORM SYSTEM-ERROR-000
+               STOP RUN
            ELSE
                CONTINUE
            END-IF.
@@ -833,4 +873,3 @@
       *================================================================*
       * END OF PGM-PHASE3
       *================================================================*
-      

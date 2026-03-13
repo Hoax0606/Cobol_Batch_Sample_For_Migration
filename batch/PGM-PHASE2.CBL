@@ -214,9 +214,9 @@
            MOVE INST-CD               TO INST-MAST-CD.
 
            EXEC SQL
-               SELECT INST_CD,        INST_NAME,
+               SELECT INST_CD,
                       INST_STAT,      FEE_RATE
-                 INTO :INST-MAST-CD,       :INST-MAST-NAME,
+                 INTO :INST-MAST-CD,
                       :INST-MAST-STAT,     :INST-MAST-FEE-RATE
                  FROM TB_INST_MASTER
                 WHERE INST_CD = :INST-MAST-CD
@@ -293,7 +293,7 @@
       *----------------------------------------------------------------*
        PROGRESS-LOG                   SECTION.
        PROGRESS-LOG-000.
-           DISPLAY ' >... ' WS-INSERT-CNT ' RECORDS INSERTED...'.
+           DISPLAY ' > ... ' WS-INSERT-CNT ' RECORDS INSERTED... <'.
        PROGRESS-LOG-999.
            EXIT.
 

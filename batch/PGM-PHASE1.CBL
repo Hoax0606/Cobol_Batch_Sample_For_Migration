@@ -202,18 +202,18 @@
        INPUT-PROC-LOOP-000.
            MOVE IN-REC TO FILE-CONTROL-REC.
 
-           EVALUATE REC-TYPE
-               WHEN 'H'
+           EVALUATE TRUE
+               WHEN IS-HEADER
                    PERFORM PROCESS-HEADER-000
-               WHEN 'T'
+               WHEN IS-TRAILER 
                    PERFORM PROCESS-TRAILER-000
-               WHEN OTHER
+               WHEN IS-DATA
                    MOVE IN-REC TO TRX-RECORD
                    PERFORM VALIDATE-DATA-000
                    IF WS-VALID
                        MOVE IN-REC   TO SORT-REC
                        RELEASE SORT-REC
-                   END-IF
+                   END-IF 
            END-EVALUATE.
 
            READ IN-FILE
@@ -428,7 +428,7 @@
            WRITE ERR-REC.
            DISPLAY ' > [' WS-ERR-CODE-ACC   '] ACCOUNT INVALID.' 
                    'SEQ = ['TRX-SEQ'] / ACC = [' ACC-NO']'.
-       VALIDATE-ERR-INST-999.
+       VALIDATE-ERR-ACC-999.
            EXIT.
 
       *----------------------------------------------------------------*
@@ -436,7 +436,7 @@
       *----------------------------------------------------------------*
        PROGRESS-LOG                   SECTION.
        PROGRESS-LOG-000.
-           DISPLAY ' >... ' WS-CALC-CNT ' DATA RECORDS PROCESSED...<'.
+           DISPLAY ' > ... ' WS-CALC-CNT ' DATA RECORDS PROCESSED... <'.
        PROGRESS-LOG-999.
            EXIT.
 
@@ -445,9 +445,6 @@
       *----------------------------------------------------------------*
        CHECK-COUNT                    SECTION.
        CHECK-COUNT-000.
-
-      *    DISPLAY " > " WS-CALC-CNT " + " WS-ERR-CNT " = " TRL-TOT-CNT
-      *    DISPLAY " > " WS-CALC-AMT " = " TRL-TOT-AMT
 
            IF WS-CALC-CNT + WS-ERR-CNT NOT = TRL-TOT-CNT
            OR WS-CALC-AMT NOT = TRL-TOT-AMT

@@ -38,62 +38,62 @@ echo ============================================================
 echo.
 
 :: ============================================================
-@REM :: 1-0. BLOGSVR : ?? ?? ?????? (PHASE1?? ?? ??)
-@REM :: ============================================================
-@REM echo [0/4] BLOGSVR: [BATCH LOG SERVICE] BUILD
-@REM echo ------------------------------------------------------------
-@REM echo  ^> Precompiling %SRC_DIR%\PGM-BLOGSVR.CBL...
-@REM gixpp -e -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-BLOGSVR.CBL" -o "%SRC_DIR%\PGM-BLOGSVR.COB"
-@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+:: 1-0. BLOGSVR : 배치 이력 서브프로그램 (PHASE1보다 먼저 빌드)
+:: ============================================================
+echo [0/4] BLOGSVR: [BATCH LOG SERVICE] BUILD
+echo ------------------------------------------------------------
+echo  ^> Precompiling %SRC_DIR%\PGM-BLOGSVR.CBL...
+gixpp -e -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-BLOGSVR.CBL" -o "%SRC_DIR%\PGM-BLOGSVR.COB"
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
-@REM echo  ^> Compiling: %SRC_DIR%\PGM-BLOGSVR.COB...
-@REM cobc -m -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-BLOGSVR.dll" "%SRC_DIR%\PGM-BLOGSVR.COB" -L"%BIN_DIR%" -lsqlite3
-@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
-@REM echo  ^> BLOGSVR build OK.
-@REM echo.
+echo  ^> Compiling: %SRC_DIR%\PGM-BLOGSVR.COB...
+cobc -m -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-BLOGSVR.dll" "%SRC_DIR%\PGM-BLOGSVR.COB" -L"%BIN_DIR%" -lsqlite3
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+echo  ^> BLOGSVR build OK.
+echo.
 
-@REM :: ============================================================
-@REM :: 2. PHASE 1 : FILE to FILE (EXEC SQL ??, gixpp ???)
-@REM ::    cobc ?? ??? / CALL 'PGM-BLOGSVR' ??? ?? BIN_DIR ??
-@REM :: ============================================================
-@REM echo [1/4] PHASE 1: [FILE to FILE] START
-@REM echo ------------------------------------------------------------
-@REM echo  ^> Compiling: %SRC_DIR%\PGM-PHASE1.CBL...
+:: ============================================================
+:: 2. PHASE 1 : FILE to FILE (EXEC SQL 없음, gixpp 불필요)
+::    cobc 직접 컴파일 / CALL 'PGM-BLOGSVR' 링크를 위해 BIN_DIR 지정
+:: ============================================================
+echo [1/4] PHASE 1: [FILE to FILE] START
+echo ------------------------------------------------------------
+echo  ^> Compiling: %SRC_DIR%\PGM-PHASE1.CBL...
 
-@REM cobc -x -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE1.exe" "%SRC_DIR%\PGM-PHASE1.CBL"
-@REM @REM cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE1.exe" "%SRC_DIR%\PGM-PHASE1.CBL" -L"%BIN_DIR%"
+cobc -x -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE1.exe" "%SRC_DIR%\PGM-PHASE1.CBL"
+@REM cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE1.exe" "%SRC_DIR%\PGM-PHASE1.CBL" -L"%BIN_DIR%"
 
-@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
-@REM :: File needed for PHASE-1
-@REM set "DD_INFILE_VAR=%RAW_DIR%\RAW_TRX_DATA.txt"
-@REM set "DD_OUTFILE_VAR=%DATA_DIR%\CLEANSED_DATA.txt"
-@REM set "DD_ERRFILE_VAR=%DATA_DIR%\ERROR_DATA.txt"
+:: File needed for PHASE-1
+set "DD_INFILE_VAR=%RAW_DIR%\RAW_TRX_DATA.txt"
+set "DD_OUTFILE_VAR=%DATA_DIR%\CLEANSED_DATA.txt"
+set "DD_ERRFILE_VAR=%DATA_DIR%\ERROR_DATA.txt"
 
-@REM echo  ^> Running %BIN_DIR%\PGM-PHASE1.exe...
-@REM echo.
-@REM "%BIN_DIR%\PGM-PHASE1.exe"
-@REM echo.
+echo  ^> Running %BIN_DIR%\PGM-PHASE1.exe...
+echo.
+"%BIN_DIR%\PGM-PHASE1.exe"
+echo.
 
-@REM :: ============================================================
-@REM :: 3. PHASE 2 : FILE to DB (SQL COBOL)
-@REM :: ============================================================
-@REM echo [2/4] PHASE 2: [FILE to DATABASE] START
-@REM echo ------------------------------------------------------------
-@REM echo  ^> Precompiling %SRC_DIR%\PGM-PHASE2.CBL...
-@REM gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE2.CBL" -o "%SRC_DIR%\PGM-PHASE2.COB"
-@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+:: ============================================================
+:: 3. PHASE 2 : FILE to DB (SQL COBOL)
+:: ============================================================
+echo [2/4] PHASE 2: [FILE to DATABASE] START
+echo ------------------------------------------------------------
+echo  ^> Precompiling %SRC_DIR%\PGM-PHASE2.CBL...
+gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE2.CBL" -o "%SRC_DIR%\PGM-PHASE2.COB"
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
-@REM echo  ^> Compiling %SRC_DIR%\PGM-PHASE2.COB...
+echo  ^> Compiling %SRC_DIR%\PGM-PHASE2.COB...
 
-@REM cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE2.exe" "%SRC_DIR%\PGM-PHASE2.COB" -L"%BIN_DIR%" -lsqlite3
-@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE2.exe" "%SRC_DIR%\PGM-PHASE2.COB" -L"%BIN_DIR%" -lsqlite3
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
-@REM set "DD_INFILE_VAR=%DATA_DIR%\CLEANSED_DATA.txt"
-@REM echo  ^> Running %BIN_DIR%\PGM-PHASE2.exe...
-@REM echo.
-@REM "%BIN_DIR%\PGM-PHASE2.exe"
-@REM echo.
+set "DD_INFILE_VAR=%DATA_DIR%\CLEANSED_DATA.txt"
+echo  ^> Running %BIN_DIR%\PGM-PHASE2.exe...
+echo.
+"%BIN_DIR%\PGM-PHASE2.exe"
+echo.
 
 :: ============================================================
 :: 4. PHASE 3 : DB to DB (SQL COBOL)
