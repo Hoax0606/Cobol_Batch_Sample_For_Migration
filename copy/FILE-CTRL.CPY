@@ -17,8 +17,12 @@
       * --- Trailer Record ---
        01  TRAILER-REC REDEFINES FILE-CONTROL-REC.
            05 TRL-TYPE           PIC X(1).
-           05 FILLER             PIC X(10).
+           05 FILLER             PIC X(1).
            05 TRL-TOT-CNT        PIC 9(10).
+           05 FILLER             PIC X(1).
+           05 TRL-IN-AMT         PIC 9(15).
+           05 FILLER             PIC X(1).
+           05 TRL-OUT-AMT        PIC 9(15).
            05 FILLER             PIC X(1).
            05 TRL-TOT-AMT        PIC 9(12).
            

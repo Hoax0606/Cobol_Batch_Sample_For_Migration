@@ -92,7 +92,7 @@
 
        01  WS-CALC-TOTALS.
            05 WS-CALC-CNT             PIC 9(10)  VALUE 0.
-           05 WS-CALC-AMT             PIC 9(15)  VALUE 0.
+           05 WS-CALC-AMT             PIC S9(11) COMP-3 VALUE 0.
            05 WS-ERR-CNT              PIC 9(10)  VALUE 0.
 
       * --- 진행 로그용 나머지 카운터 ---
@@ -332,7 +332,14 @@
               ELSE
                  IF TRX-TYPE = 'I'
                     MOVE WS-LOG-TRX-AMT TO TRX-AMT
-                    ADD TRX-AMT TO WS-CALC-AMT
+      *             ADD TRX-AMT TO WS-CALC-AMT
+                    ADD FUNCTION NUMVAL(WS-LOG-TRX-AMT) TO WS-CALC-AMT
+                 ELSE
+                    MOVE WS-LOG-TRX-AMT TO TRX-AMT
+      *             SUBTRACT TRX-AMT FROM WS-CALC-AMT
+                    SUBTRACT FUNCTION NUMVAL(WS-LOG-TRX-AMT) 
+                             FROM WS-CALC-AMT
+                 END-IF
               END-IF
            END-IF.
                  
@@ -446,8 +453,16 @@
        CHECK-COUNT                    SECTION.
        CHECK-COUNT-000.
 
+           DISPLAY ' [DEBUG] '
+                    WS-CALC-CNT ' = ' TRL-TOT-CNT.
+
+           DISPLAY ' [DEBUG] '
+                    WS-CALC-AMT ' = ' 
+                    FUNCTION NUMVAL(TRL-TOT-AMT).      
+
+
            IF WS-CALC-CNT + WS-ERR-CNT NOT = TRL-TOT-CNT
-           OR WS-CALC-AMT NOT = TRL-TOT-AMT
+           OR WS-CALC-AMT NOT = FUNCTION NUMVAL(TRL-TOT-AMT)
                MOVE 'TRAILER AMOUNT/COUNT MISMATCH' TO ERR-DESCRIPTION
                PERFORM ERROR-LOG-000
                SET BATCH-ERROR TO TRUE

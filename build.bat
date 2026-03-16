@@ -113,24 +113,24 @@ echo.
 "%BIN_DIR%\PGM-PHASE3.exe"
 echo.
 
-@REM :: ============================================================
-@REM :: 5. PHASE 4 : DB to FILE (SQL COBOL)
-@REM :: ============================================================
-@REM echo [4/4] PHASE 4: [DATABASE to FILE] START
-@REM echo ------------------------------------------------------------
-@REM echo  ^> Precompiling %SRC_DIR%\PGM-PHASE4.CBL...
-@REM gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE4.CBL" -o "%SRC_DIR%\PGM-PHASE4.COB"
-@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+:: ============================================================
+:: 5. PHASE 4 : DB to FILE (SQL COBOL)
+:: ============================================================
+echo [4/4] PHASE 4: [DATABASE to FILE] START
+echo ------------------------------------------------------------
+echo  ^> Precompiling %SRC_DIR%\PGM-PHASE4.CBL...
+gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE4.CBL" -o "%SRC_DIR%\PGM-PHASE4.COB"
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
-@REM echo  ^> Compiling %SRC_DIR%\PGM-PHASE4.COB...
-@REM cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE4.exe" "%SRC_DIR%\PGM-PHASE4.COB" -L"%BIN_DIR%" -lsqlite3
-@REM if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
+echo  ^> Compiling %SRC_DIR%\PGM-PHASE4.COB...
+cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE4.exe" "%SRC_DIR%\PGM-PHASE4.COB" -L"%BIN_DIR%" -lsqlite3
+if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
-@REM set "DD_OUTFILE_VAR=%DATA_DIR%\SEND_DATA.txt"
-@REM echo  ^> Running %BIN_DIR%\PGM-PHASE4.exe...
-@REM echo.
-@REM "%BIN_DIR%\PGM-PHASE4.exe"
-@REM echo.
+set "DD_OUTFILE_VAR=%DATA_DIR%\SEND_DATA.txt"
+echo  ^> Running %BIN_DIR%\PGM-PHASE4.exe...
+echo.
+"%BIN_DIR%\PGM-PHASE4.exe"
+echo.
 
 :: ============================================================
 :: End of Batch
