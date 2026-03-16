@@ -12,5 +12,4 @@
            05 TRX-TYPE          PIC X(1).
            05 FILLER            PIC X(1).
            05 TRX-AMT           PIC 9(12).
-           05 TRX-COUNT         PIC 9(2) VALUE 00.
            

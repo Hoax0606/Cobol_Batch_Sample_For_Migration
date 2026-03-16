@@ -63,17 +63,17 @@
       *     배치 이력(TB_BATCH_LOG) 기록은 서브프로그램에 위임
       *     DB 접속 정보는 PGM-BLOGSVR 내부에서 환경변수로 직접 취득
        01  BLG-PARAMS.
-           05 BLG-ACTION              PIC X(5)   VALUE SPACES.
-           05 BLG-PGM-ID              PIC X(10)  VALUE SPACES.
-           05 BLG-BIZ-DATE            PIC X(8)   VALUE SPACES.
-           05 BLG-START-DT            PIC X(14)  VALUE SPACES.
-           05 BLG-END-DT              PIC X(14)  VALUE SPACES.
-           05 BLG-STAT                PIC X(1)   VALUE SPACES.
-           05 BLG-PROC-CNT            PIC 9(10)  VALUE 0.
-           05 BLG-ERR-CNT             PIC 9(10)  VALUE 0.
-           05 BLG-REMARK              PIC X(100) VALUE SPACES.
-           05 BLG-BATCH-ID            PIC S9(10) COMP-3 VALUE 0.
-           05 BLG-RETURN-CODE         PIC 9(4)   VALUE 0.
+           05 BLG-ACTION        PIC X(5)    VALUE SPACES.
+           05 BLG-PGM-ID        PIC X(10)   VALUE SPACES.
+           05 BLG-BIZ-DATE      PIC X(8)    VALUE SPACES.
+           05 BLG-START-DT      PIC X(14)   VALUE SPACES.
+           05 BLG-END-DT        PIC X(14)   VALUE SPACES.
+           05 BLG-STAT          PIC X(1)    VALUE SPACES.
+           05 BLG-PROC-CNT      PIC 9(10)   VALUE 0.
+           05 BLG-ERR-CNT       PIC 9(10)   VALUE 0.
+           05 BLG-REMARK        PIC X(100)  VALUE SPACES.
+           05 BLG-BATCH-ID      PIC S9(10)  COMP-3 VALUE 0.
+           05 BLG-RETURN-CODE   PIC 9(4)    VALUE 0.
 
        01  WS-FILE-STATUS.
            05 WS-IN-STAT              PIC X(2).
@@ -92,12 +92,18 @@
 
        01  WS-CALC-TOTALS.
            05 WS-CALC-CNT             PIC 9(10)  VALUE 0.
-           05 WS-CALC-AMT             PIC S9(11) COMP-3 VALUE 0.
            05 WS-ERR-CNT              PIC 9(10)  VALUE 0.
+           05 WS-TRX-COUNT            PIC 9(2)   VALUE 0.
+
+      *77  WS-TRX-COUNT            PIC 9(2)   VALUE 0.
+
+       01  WS-CALC-AMT             PIC S9(11) COMP-3 VALUE 0.
 
       * --- 진행 로그용 나머지 카운터 ---
        01  WS-WORK-AREAS.
            05 WS-MOD-WORK             PIC 9(10) COMP     VALUE 0.
+           05 WS-CNT-SEQ              PIC 9(2)           VALUE 0.
+           05 WS-CNT-ACC              PIC 9(2)           VALUE 0.
 
       * --- STRING 조립용 로그 버퍼 ---
        01  WS-LOG-BUFFER              PIC X(80)  VALUE SPACES.
@@ -106,6 +112,8 @@
 
       * --- INSPECT 용 카운터 ---
        01  WS-INSPECT-CNT             PIC 9(5)   VALUE 0.
+      *01  WS-TRX-COUNT            PIC 9(2)   VALUE 0.
+      
 
       * --- 77 레벨: 독립 단일 항목 ---
        77  WS-PROG-NAME               PIC X(10)  VALUE 'PGM-PHASE1'.
@@ -122,6 +130,8 @@
        78  WS-ERR-CODE-ACC            VALUE 'E003'.
        78  WS-ERR-CODE-TYPE           VALUE 'E004'.
        78  WS-ERR-CODE-AMT            VALUE 'E005'.
+       78  WS-ERR-CODE-CTRL           VALUE 'E006'.
+       78  WS-ERR-CODE-OVF            VALUE 'E007'.
 
       *================================================================*
       * PROCEDURE                     DIVISION.
@@ -140,9 +150,8 @@
                OUTPUT PROCEDURE IS OUTPUT-PROC-000.
            PERFORM CHECK-COUNT-000
            PERFORM FINALIZE-000.
-           STOP RUN.
        MAIN-999.
-           EXIT.
+           STOP RUN.
       *----------------------------------------------------------------*
       * INIT                          SECTION.
       *----------------------------------------------------------------*
@@ -296,34 +305,43 @@
            SET WS-VALID TO TRUE.
            
            MOVE IN-REC TO TRX-RECORD.
-      *    INSPECT: スペース個数カウント (문자열 품질 확인 예시)
+      *    INSPECT: 제어문자(TAB/CR/LF) 오염 카운트
            MOVE 0 TO WS-INSPECT-CNT.
            INSPECT TRX-RECORD
-               TALLYING WS-INSPECT-CNT FOR ALL SPACES.
-           
-           IF WS-INSPECT-CNT NOT EQUAL 8 THEN
-              PERFORM VALIDATE-ERR-FIELD-000
+               TALLYING WS-INSPECT-CNT FOR ALL X'09'
+                                            ALL X'0D'
+                                            ALL X'0A'.
+
+           IF WS-INSPECT-CNT > 0 THEN
+              PERFORM VALIDATE-ERR-CTRL-CHAR-000
            ELSE
               MOVE SPACES TO TRX-RECORD
+              MOVE 0 TO WS-TRX-COUNT
    
               UNSTRING IN-REC
                   DELIMITED BY SPACE
                   INTO TRX-HEADER
                        TRX-DATE
-                       TRX-SEQ
+                       TRX-SEQ      COUNT IN WS-CNT-SEQ
                        INST-CD
-                       ACC-NO
+                       ACC-NO       COUNT IN WS-CNT-ACC
                        TRX-TYPE
                        WS-LOG-TRX-AMT
-                  TALLYING TRX-COUNT
+                  TALLYING WS-TRX-COUNT
+                  ON OVERFLOW
+                      PERFORM VALIDATE-ERR-OVERFLOW-000
+                  NOT ON OVERFLOW
+                      CONTINUE
               END-UNSTRING
-          
+
       *       TRX-SEQ 数値チェック
-              IF TRX-SEQ NOT NUMERIC
+              IF WS-TRX-COUNT NOT = 7
+                  PERFORM VALIDATE-ERR-FIELD-000
+              ELSE IF TRX-SEQ NOT NUMERIC OR WS-CNT-SEQ NOT = 10
                   PERFORM VALIDATE-ERR-SEQ-000
               ELSE IF INST-CD = SPACES
                  PERFORM  VALIDATE-ERR-INST-000
-              ELSE IF ACC-NO  = SPACES
+              ELSE IF ACC-NO  = SPACES OR WS-CNT-ACC NOT = 15
                  PERFORM  VALIDATE-ERR-ACC-000
               ELSE IF TRX-TYPE NOT EQUAL 'I' AND TRX-TYPE NOT EQUAL 'O'
                  PERFORM VALIDATE-ERR-TYPE-000
@@ -332,11 +350,9 @@
               ELSE
                  IF TRX-TYPE = 'I'
                     MOVE WS-LOG-TRX-AMT TO TRX-AMT
-      *             ADD TRX-AMT TO WS-CALC-AMT
                     ADD FUNCTION NUMVAL(WS-LOG-TRX-AMT) TO WS-CALC-AMT
                  ELSE
                     MOVE WS-LOG-TRX-AMT TO TRX-AMT
-      *             SUBTRACT TRX-AMT FROM WS-CALC-AMT
                     SUBTRACT FUNCTION NUMVAL(WS-LOG-TRX-AMT) 
                              FROM WS-CALC-AMT
                  END-IF
@@ -436,6 +452,35 @@
            DISPLAY ' > [' WS-ERR-CODE-ACC   '] ACCOUNT INVALID.' 
                    'SEQ = ['TRX-SEQ'] / ACC = [' ACC-NO']'.
        VALIDATE-ERR-ACC-999.
+           EXIT.
+
+      *----------------------------------------------------------------*
+      * VALIDATE-ERR-CTRL-CHAR        SECTION.
+      *----------------------------------------------------------------*
+       VALIDATE-ERR-CTRL-CHAR         SECTION.
+       VALIDATE-ERR-CTRL-CHAR-000.
+           SET WS-INVALID TO TRUE.
+           ADD 1 TO WS-ERR-CNT.
+           MOVE IN-REC TO ERR-REC.
+           WRITE ERR-REC.
+           DISPLAY ' > [' WS-ERR-CODE-CTRL
+                   '] CTRL CHAR DETECTED : ['
+                   WS-INSPECT-CNT '] CHARS'.
+       VALIDATE-ERR-CTRL-CHAR-999.
+           EXIT.
+
+      *----------------------------------------------------------------*
+      * VALIDATE-ERR-OVERFLOW         SECTION.
+      *----------------------------------------------------------------*
+       VALIDATE-ERR-OVERFLOW           SECTION.
+       VALIDATE-ERR-OVERFLOW-000.
+           SET WS-INVALID TO TRUE.
+           ADD 1 TO WS-ERR-CNT.
+           MOVE IN-REC TO ERR-REC.
+           WRITE ERR-REC.
+           DISPLAY ' > [' WS-ERR-CODE-OVF
+                   '] UNSTRING OVERFLOW DETECTED'.
+       VALIDATE-ERR-OVERFLOW-999.
            EXIT.
 
       *----------------------------------------------------------------*

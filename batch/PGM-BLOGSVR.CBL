@@ -30,14 +30,8 @@
            05 WS-USER                 PIC X(30) VALUE SPACES.
            05 WS-PWD                  PIC X(30) VALUE SPACES.
 
-      * --- DB 접속 상태 플래그 ---
-       01  WS-CONN-FLAG               PIC X(1)  VALUE 'N'.
-           88 WS-CONNECTED            VALUE 'Y'.
-           88 WS-NOT-CONNECTED        VALUE 'N'.
-
       * --- 내부 작업용 변수 ---
        01  WS-WORK-AREAS.
-           05 WS-CURRENT-DT           PIC X(14) VALUE SPACES.
            05 WS-SQLCODE-DISP         PIC S9(9) VALUE 0.
 
       *================================================================*
@@ -101,8 +95,7 @@
 
            EXEC SQL DISCONNECT CURRENT    END-EXEC.
        MAIN-999.
-           EXIT PROGRAM.
-
+           GOBACK.
       *----------------------------------------------------------------*
       * DB-CONNECT                    SECTION.
       *----------------------------------------------------------------*
@@ -122,7 +115,7 @@
                END-EXEC
 
                IF SQLCODE = 0 THEN
-                   SET WS-CONNECTED TO TRUE
+                   CONTINUE
                ELSE
                    MOVE SQLCODE TO WS-SQLCODE-DISP
                    DISPLAY '> [BLOGSVR] DB CONNECT FAILED. SQLCODE='

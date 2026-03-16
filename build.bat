@@ -59,10 +59,8 @@ echo.
 echo [1/4] PHASE 1: [FILE to FILE] START
 echo ------------------------------------------------------------
 echo  ^> Compiling: %SRC_DIR%\PGM-PHASE1.CBL...
-
 cobc -x -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE1.exe" "%SRC_DIR%\PGM-PHASE1.CBL"
 @REM cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE1.exe" "%SRC_DIR%\PGM-PHASE1.CBL" -L"%BIN_DIR%"
-
 if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
 :: File needed for PHASE-1
@@ -85,7 +83,6 @@ gixpp -e -I"%COPY_DIR%" -I"%COPY_DIR%" -I"%SRC_DIR%" -i "%SRC_DIR%\PGM-PHASE2.CB
 if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 
 echo  ^> Compiling %SRC_DIR%\PGM-PHASE2.COB...
-
 cobc -x -fixed -I"%COPY_DIR%" -o "%BIN_DIR%\PGM-PHASE2.exe" "%SRC_DIR%\PGM-PHASE2.COB" -L"%BIN_DIR%" -lsqlite3
 if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 

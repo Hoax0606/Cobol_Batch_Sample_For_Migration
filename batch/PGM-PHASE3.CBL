@@ -88,7 +88,6 @@
       * --- 작업 영역 ---
        01  WS-WORK-AREAS.
            05 WS-FEE-WORK             PIC S9(15) COMP-3 VALUE 0.
-           05 WS-NET-WORK             PIC S9(15) COMP-3 VALUE 0.
 
       * --- 배치 시작일시 ---
        01  WS-START-DATETIME          PIC X(14) VALUE SPACES.
@@ -164,9 +163,8 @@
            PERFORM PROCESS-000
                UNTIL WS-EOF.
            PERFORM FINALIZE-000.
-           STOP RUN.
        MAIN-999.
-           EXIT.
+           STOP RUN.
 
       *----------------------------------------------------------------*
       * INIT                          SECTION.

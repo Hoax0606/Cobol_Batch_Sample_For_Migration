@@ -92,3 +92,4 @@
            05 BLG-PROC-CNT            PIC S9(10) COMP-3.
            05 BLG-ERR-CNT             PIC S9(10) COMP-3.
            05 BLG-REMARK              PIC X(200).
+           

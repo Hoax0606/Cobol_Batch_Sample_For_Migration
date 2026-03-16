@@ -65,7 +65,6 @@
       * --- 작업 영역 ---
        01  WS-WORK-AREAS.
            05 WS-FEE-AMT-COMP         PIC S9(12) COMP-3 VALUE 0.
-           05 WS-MOD-WORK             PIC 9(10)  COMP   VALUE 0.
        
       * --- DB 접속 정보 (환경변수로 취득) ---
        01  WS-DB-CONN.
@@ -97,9 +96,8 @@
            PERFORM PROCESS-000
                UNTIL WS-EOF.
            PERFORM FINALIZE-000.
-           STOP RUN.
        MAIN-999.
-           EXIT.
+           STOP RUN.
 
       *----------------------------------------------------------------*
       * INIT                          SECTION.

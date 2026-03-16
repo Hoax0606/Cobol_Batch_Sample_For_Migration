@@ -29,17 +29,31 @@
        DATA                           DIVISION.
        FILE                           SECTION.
        FD  OUT-FILE.
-       01  OUT-REC                    PIC X(71).
+       01  OUT-REC                    PIC X(118).
 
-      * --- 출력 파일 데이터 레이아웃 (71 Bytes) ---
-      *     SETTLE-DATE(8) + INST-NAME(20) + TOT-IN(15)
-      *     + TOT-OUT(15) + NET-AMT(13) = 71
+      * --- 출력 파일 데이터 레이아웃 (118 Bytes) ---
+      * [전문헤더부  48 Bytes]
+      *   DATA_TYPE(1) + SETTLE_DATE(8) + CREATE_DT(14)
+      *   + INST_CD(4) + INST_NAME(20) + FILLER(1)
+      * [업무데이터부 70 Bytes]
+      *   TOT_IN_AMT(15) + TOT_OUT_AMT(15)
+      *   + NET_AMT(15) + TOT_FEE_AMT(15) + TOTAL_CNT(10)
        01  DATA-REC REDEFINES OUT-REC.
+      *    --- 전문헤더부 (48 Bytes) ---
+           05 OUT-DATA-TYPE           PIC X(1).
            05 OUT-SETTLE-DATE         PIC X(8).
-           05 OUT-INST-NAME           PIC X(13).
+           05 OUT-CREATE-DT           PIC X(14).
+           05 OUT-INST-CD             PIC X(4).
+           05 OUT-INST-NAME           PIC X(20).
+           05 FILLER                  PIC X(1).
+      *    --- 업무데이터부 (70 Bytes) ---
            05 OUT-TOT-IN              PIC 9(15).
            05 OUT-TOT-OUT             PIC 9(15).
-           05 OUT-NET-AMT             PIC -9(12).
+           05 OUT-NET-AMT             PIC S9(14) SIGN LEADING SEPARATE.
+           05 OUT-TOT-FEE             PIC 9(15).
+           05 OUT-TOTAL-CNT           PIC 9(10).
+      * --- 66 레벨: 전문 식별 키 (DATA-TYPE + SETTLE-DATE + INST-CD) ---
+       66  REC-KEY   RENAMES OUT-DATA-TYPE THRU OUT-INST-CD.
 
        WORKING-STORAGE                SECTION.
       * --- 시스템 공통 영역 및 에러 로그 Include ---
@@ -68,19 +82,19 @@
 
       * --- 처리 건수 집계 ---
        01  WS-COUNTERS.
-           05 WS-CALC-CNT             PIC 9(10) VALUE 0.
-           05 WS-ERR-CNT              PIC 9(10) VALUE 0.
+           05 WS-CALC-CNT             PIC 9(9)  COMP-5 VALUE 0.
+           05 WS-ERR-CNT              PIC 9(9)  COMP-5 VALUE 0.
 
       * --- 대사 합계 ---
        01  WS-CALC-TOTALS.
            05 WS-CALC-AMT             PIC S9(15) COMP-3 VALUE 0.
            05 WS-CALC-IN              PIC S9(15) COMP-3 VALUE 0.
            05 WS-CALC-OUT             PIC S9(15) COMP-3 VALUE 0.
+           05 WS-CALC-FEE             PIC S9(15) COMP-3 VALUE 0.
 
       * --- 작업 영역 ---
        01  WS-WORK-AREAS.
-           05 WS-NET-WORK             PIC S9(15) COMP-3 VALUE 0.
-           05 WS-MOD-WORK             PIC 9(10)  COMP   VALUE 0.
+           05 WS-MOD-WORK             PIC 9(9)  COMP-5 VALUE 0.
 
       * --- 배치 시작일시 ---
        01  WS-START-DATETIME          PIC X(14) VALUE SPACES.
@@ -93,7 +107,7 @@
            05 ED-TOT-IN               PIC -Z,ZZZ,ZZZ,ZZ9.
            05 ED-TOT-OUT              PIC -Z,ZZZ,ZZZ,ZZ9.
            05 ED-NET-AMT              PIC -Z,ZZZ,ZZZ,ZZ9.
-           05 ED-SETTLE-DATE          PIC 9999/99/99.
+           05 ED-TOT-FEE              PIC -Z,ZZZ,ZZZ,ZZ9.
            05 ED-CALC-AMT             PIC -$,$$$,$$$,$$$,$$9.
 
       * --- 77 레벨: 독립 단일 항목 ---
@@ -108,7 +122,8 @@
                DECLARE C-NET-SUMMARY CURSOR FOR
                SELECT SETTLE_DATE, INST_CD,
                       INST_NAME,
-                      TOT_IN_AMT, TOT_OUT_AMT, NET_AMT
+                      TOT_IN_AMT, TOT_OUT_AMT, NET_AMT,
+                      TOT_FEE_AMT, TOTAL_CNT
                  FROM TB_NET_SUMMARY
                 WHERE SETTLE_DATE = :WS-BIZ-DATE-W
                 ORDER BY INST_CD ASC
@@ -127,9 +142,8 @@
            PERFORM PROCESS-000
                UNTIL WS-EOF.
            PERFORM FINALIZE-000.
-           STOP RUN.
        MAIN-999.
-           EXIT.
+           STOP RUN.
       *----------------------------------------------------------------*
       * INIT                          SECTION.
       *----------------------------------------------------------------*
@@ -211,7 +225,8 @@
                 INTO :SUM-SETTLE-DATE, :SUM-INST-CD,
                      :SUM-INST-NAME,
                      :SUM-TOT-IN,      :SUM-TOT-OUT,
-                     :SUM-NET-AMT
+                     :SUM-NET-AMT,     :SUM-TOT-FEE,
+                     :SUM-TOT-CNT
            END-EXEC.
 
            EVALUATE SQLCODE
@@ -246,36 +261,47 @@
       *----------------------------------------------------------------*
        WRITE-DATA                     SECTION.
        WRITE-DATA-000.
-      * --- 기관명 MOVE 후 INSPECT CONVERTING 으로 대문자 정규화 ---
+      * --- 전문헤더부 조립: STRING으로 REC-KEY에 직접 조립 ---
+           STRING 'D'                          DELIMITED BY SIZE
+                  SUM-SETTLE-DATE              DELIMITED BY SIZE
+                  FUNCTION CURRENT-DATE(1:14)  DELIMITED BY SIZE
+                  SUM-INST-CD                  DELIMITED BY SIZE
+               INTO REC-KEY
+           END-STRING.
+
+      * --- 기관명 MOVE 후 INSPECT CONVERTING 으로 소문자 정규화 ---
            MOVE SUM-INST-NAME         TO OUT-INST-NAME.
            INSPECT OUT-INST-NAME
                CONVERTING 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
                         TO 'abcdefghijklmnopqrstuvwxyz'.
 
-      * --- 파일 출력: 수치형 그대로 OUT-REC(REDEFINES)에 MOVE ---
-           MOVE SUM-SETTLE-DATE       TO OUT-SETTLE-DATE.
+      * --- 업무데이터부 조립 ---
            MOVE SUM-TOT-IN            TO OUT-TOT-IN.
            MOVE SUM-TOT-OUT           TO OUT-TOT-OUT.
            MOVE SUM-NET-AMT           TO OUT-NET-AMT.
+           MOVE SUM-TOT-FEE           TO OUT-TOT-FEE.
+           MOVE SUM-TOT-CNT           TO OUT-TOTAL-CNT.
            WRITE OUT-REC.
 
       * --- DISPLAY 출력: 서식형변수로 편집된 값 표시 ---
-           MOVE SUM-SETTLE-DATE       TO ED-SETTLE-DATE.
            MOVE SUM-TOT-IN            TO ED-TOT-IN.
            MOVE SUM-TOT-OUT           TO ED-TOT-OUT.
            MOVE SUM-NET-AMT           TO ED-NET-AMT.
+           MOVE SUM-TOT-FEE           TO ED-TOT-FEE.
            DISPLAY ' > [DATA]'
-                   ' DATE='   ED-SETTLE-DATE
+                   ' KEY=['   REC-KEY ']'
                    ' NAME='   OUT-INST-NAME
                    ' IN='     ED-TOT-IN
                    ' OUT='    ED-TOT-OUT
-                   ' NET='    ED-NET-AMT.
+                   ' NET='    ED-NET-AMT
+                   ' FEE='    ED-TOT-FEE.
 
       * --- 대사용 건수·금액 누적 ---
            ADD 1                      TO WS-CALC-CNT.
            ADD SUM-TOT-IN             TO WS-CALC-IN.
            ADD SUM-TOT-OUT            TO WS-CALC-OUT.
            ADD SUM-NET-AMT            TO WS-CALC-AMT.
+           ADD SUM-TOT-FEE            TO WS-CALC-FEE.
 
       * --- 진행 로그 (WS-PROGRESS-INTERVAL 건마다) ---
            COMPUTE WS-MOD-WORK = FUNCTION MOD(WS-CALC-CNT,
@@ -315,6 +341,7 @@
            DISPLAY ' > DATA WRITTEN : '  WS-CALC-CNT.
            DISPLAY ' > TOTAL IN AMT : '  WS-CALC-IN.
            DISPLAY ' > TOTAL OUT AMT: '  WS-CALC-OUT.
+           DISPLAY ' > TOTAL FEE AMT: '  WS-CALC-FEE.
            DISPLAY ' > TOTAL NET AMT: '  ED-CALC-AMT.
            DISPLAY ' > DB ERRORS    : '  WS-ERR-CNT.
            DISPLAY ' > ====================================='.
@@ -456,6 +483,7 @@
            DISPLAY 'PGM: '      ERR-PGM-ID
                    ' SQLCODE: ' ERR-SQLCODE.
            DISPLAY 'MSG: '      ERR-DESCRIPTION.
+           DISPLAY 'KEY: ['     REC-KEY ']'.
        DB-ERROR-999.
            EXIT.
       *================================================================*
