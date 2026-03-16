@@ -92,7 +92,7 @@
 
        01  WS-CALC-TOTALS.
            05 WS-CALC-CNT             PIC 9(10)  VALUE 0.
-           05 WS-CALC-AMT             PIC 9(15)  VALUE 0.
+           05 WS-CALC-AMT             PIC S9(11) COMP-3 VALUE 0.
            05 WS-ERR-CNT              PIC 9(10)  VALUE 0.
 
       * --- 진행 로그용 나머지 카운터 ---
@@ -202,18 +202,18 @@
        INPUT-PROC-LOOP-000.
            MOVE IN-REC TO FILE-CONTROL-REC.
 
-           EVALUATE REC-TYPE
-               WHEN 'H'
+           EVALUATE TRUE
+               WHEN IS-HEADER
                    PERFORM PROCESS-HEADER-000
-               WHEN 'T'
+               WHEN IS-TRAILER 
                    PERFORM PROCESS-TRAILER-000
-               WHEN OTHER
+               WHEN IS-DATA
                    MOVE IN-REC TO TRX-RECORD
                    PERFORM VALIDATE-DATA-000
                    IF WS-VALID
                        MOVE IN-REC   TO SORT-REC
                        RELEASE SORT-REC
-                   END-IF
+                   END-IF 
            END-EVALUATE.
 
            READ IN-FILE
@@ -332,7 +332,14 @@
               ELSE
                  IF TRX-TYPE = 'I'
                     MOVE WS-LOG-TRX-AMT TO TRX-AMT
-                    ADD TRX-AMT TO WS-CALC-AMT
+      *             ADD TRX-AMT TO WS-CALC-AMT
+                    ADD FUNCTION NUMVAL(WS-LOG-TRX-AMT) TO WS-CALC-AMT
+                 ELSE
+                    MOVE WS-LOG-TRX-AMT TO TRX-AMT
+      *             SUBTRACT TRX-AMT FROM WS-CALC-AMT
+                    SUBTRACT FUNCTION NUMVAL(WS-LOG-TRX-AMT) 
+                             FROM WS-CALC-AMT
+                 END-IF
               END-IF
            END-IF.
                  
@@ -428,7 +435,7 @@
            WRITE ERR-REC.
            DISPLAY ' > [' WS-ERR-CODE-ACC   '] ACCOUNT INVALID.' 
                    'SEQ = ['TRX-SEQ'] / ACC = [' ACC-NO']'.
-       VALIDATE-ERR-INST-999.
+       VALIDATE-ERR-ACC-999.
            EXIT.
 
       *----------------------------------------------------------------*
@@ -436,7 +443,7 @@
       *----------------------------------------------------------------*
        PROGRESS-LOG                   SECTION.
        PROGRESS-LOG-000.
-           DISPLAY ' >... ' WS-CALC-CNT ' DATA RECORDS PROCESSED...<'.
+           DISPLAY ' > ... ' WS-CALC-CNT ' DATA RECORDS PROCESSED... <'.
        PROGRESS-LOG-999.
            EXIT.
 
@@ -446,11 +453,16 @@
        CHECK-COUNT                    SECTION.
        CHECK-COUNT-000.
 
-      *    DISPLAY " > " WS-CALC-CNT " + " WS-ERR-CNT " = " TRL-TOT-CNT
-      *    DISPLAY " > " WS-CALC-AMT " = " TRL-TOT-AMT
+           DISPLAY ' [DEBUG] '
+                    WS-CALC-CNT ' = ' TRL-TOT-CNT.
+
+           DISPLAY ' [DEBUG] '
+                    WS-CALC-AMT ' = ' 
+                    FUNCTION NUMVAL(TRL-TOT-AMT).      
+
 
            IF WS-CALC-CNT + WS-ERR-CNT NOT = TRL-TOT-CNT
-           OR WS-CALC-AMT NOT = TRL-TOT-AMT
+           OR WS-CALC-AMT NOT = FUNCTION NUMVAL(TRL-TOT-AMT)
                MOVE 'TRAILER AMOUNT/COUNT MISMATCH' TO ERR-DESCRIPTION
                PERFORM ERROR-LOG-000
                SET BATCH-ERROR TO TRUE

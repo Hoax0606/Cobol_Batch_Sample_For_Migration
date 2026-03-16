@@ -78,7 +78,7 @@
            PERFORM DB-CONNECT-000.
 
            IF BLG-RETURN-CODE NOT = 0 THEN
-               PERFORM MAIN-EXIT-000
+               GO TO MAIN-999
            ELSE
                CONTINUE
            END-IF.
@@ -102,15 +102,6 @@
            EXEC SQL DISCONNECT CURRENT    END-EXEC.
        MAIN-999.
            EXIT PROGRAM.
-
-      *----------------------------------------------------------------*
-      * MAIN-EXIT                     SECTION.
-      *----------------------------------------------------------------*
-       MAIN-EXIT                      SECTION.
-       MAIN-EXIT-000.
-           EXIT PROGRAM.
-       MAIN-EXIT-999.
-           EXIT.
 
       *----------------------------------------------------------------*
       * DB-CONNECT                    SECTION.
