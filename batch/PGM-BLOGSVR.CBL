@@ -38,30 +38,11 @@
       * LINKAGE                       SECTION.
       *================================================================*
        LINKAGE                        SECTION.
-
-      * --- 호출 파라미터 블록 ---
-       01  BLG-PARAMS.
-      *    액션 코드: 'START' / 'END  '
-           05 BLG-ACTION              PIC X(5).
-              88 BLG-START            VALUE 'START'.
-              88 BLG-END              VALUE 'END  '.
-      *    배치 식별 정보
-           05 BLG-PGM-ID              PIC X(10).
-           05 BLG-BIZ-DATE            PIC X(8).
-           05 BLG-START-DT            PIC X(14).
-           05 BLG-END-DT              PIC X(14).
-           05 BLG-STAT                PIC X(1).
-           05 BLG-PROC-CNT            PIC 9(10).
-           05 BLG-ERR-CNT             PIC 9(10).
-           05 BLG-REMARK              PIC X(100).
-      *    채번된 BATCH_ID (START 후 반환값)
-           05 BLG-BATCH-ID            PIC S9(10) COMP-3.
-      *    처리 결과 코드 (0=정상, 8=오류)
-           05 BLG-RETURN-CODE         PIC 9(4).
+           EXEC SQL INCLUDE SQL-DCLGEN END-EXEC.
       *================================================================*
       * PROCEDURE                     DIVISION.
       *================================================================*
-       PROCEDURE                      DIVISION USING BLG-PARAMS.
+       PROCEDURE                      DIVISION USING DCL-TB-BATCH-LOG.
       *----------------------------------------------------------------*
       * MAIN                          SECTION.
       *----------------------------------------------------------------*

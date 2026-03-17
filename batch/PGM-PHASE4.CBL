@@ -143,6 +143,7 @@
                UNTIL WS-EOF.
            PERFORM FINALIZE-000.
        MAIN-999.
+           MOVE SYS-RET-CODE TO RETURN-CODE
            STOP RUN.
       *----------------------------------------------------------------*
       * INIT                          SECTION.
@@ -163,6 +164,8 @@
            IF WS-DATASRC = SPACES THEN
                MOVE 'GIXSQL_DB_CONN NOT SET' TO ERR-DESCRIPTION
                PERFORM SYSTEM-ERROR-000
+               SET BATCH-ERROR TO TRUE
+               MOVE SYS-RET-CODE TO RETURN-CODE
                STOP RUN
            ELSE
                CONTINUE
@@ -174,6 +177,8 @@
            IF WS-OUT-STAT NOT = '00' THEN
                MOVE 'OUTPUT FILE OPEN ERROR' TO ERR-DESCRIPTION
                PERFORM SYSTEM-ERROR-000
+               SET BATCH-ERROR TO TRUE
+               MOVE SYS-RET-CODE TO RETURN-CODE
                STOP RUN
            ELSE
                CONTINUE
@@ -189,6 +194,8 @@
                MOVE SQLCODE            TO ERR-SQLCODE
                MOVE 'DB CONNECT ERROR' TO ERR-DESCRIPTION
                PERFORM SYSTEM-ERROR-000
+               SET BATCH-ERROR TO TRUE
+               MOVE SYS-RET-CODE TO RETURN-CODE
                STOP RUN
            ELSE
                CONTINUE
@@ -204,6 +211,8 @@
                MOVE SQLCODE               TO ERR-SQLCODE
                MOVE 'CURSOR OPEN ERROR'   TO ERR-DESCRIPTION
                PERFORM SYSTEM-ERROR-000
+               SET BATCH-ERROR TO TRUE
+               MOVE SYS-RET-CODE TO RETURN-CODE
                STOP RUN
            ELSE
                CONTINUE
@@ -238,6 +247,8 @@
                    MOVE SQLCODE           TO ERR-SQLCODE
                    MOVE 'CURSOR FETCH ERROR' TO ERR-DESCRIPTION
                    PERFORM SYSTEM-ERROR-000
+                   SET BATCH-ERROR TO TRUE
+                   MOVE SYS-RET-CODE TO RETURN-CODE
                    STOP RUN
            END-EVALUATE.
        PROCESS-999.
@@ -249,6 +260,7 @@
        WRITE-HEADER                   SECTION.
        WRITE-HEADER-000.
       * --- FILE-CTRL (REDEFINES) 를 활용한 Header 동적 생성 ---
+           MOVE SPACES                TO OUT-REC.
            MOVE 'H'                   TO REC-TYPE.
            MOVE SYS-BIZ-DATE          TO HDR-CREATE-DATE.
            MOVE FILE-CONTROL-REC      TO OUT-REC.
@@ -354,10 +366,17 @@
        WRITE-TRAILER                  SECTION.
        WRITE-TRAILER-000.
       * --- FILE-CTRL (REDEFINES) 를 활용한 Trailer 동적 생성 ---
+           MOVE SPACES                TO OUT-REC.
            MOVE 'T'                   TO REC-TYPE.
            MOVE WS-CALC-CNT           TO TRL-TOT-CNT.
            MOVE WS-CALC-AMT           TO TRL-TOT-AMT.
-           MOVE FILE-CONTROL-REC      TO OUT-REC.
+           STRING REC-TYPE            DELIMITED BY SIZE
+                  SPACE               DELIMITED BY SIZE
+                  TRL-TOT-CNT         DELIMITED BY SIZE
+                  SPACE               DELIMITED BY SIZE
+                  TRL-TOT-AMT         DELIMITED BY SIZE
+               INTO OUT-REC
+           END-STRING.
            WRITE OUT-REC.
        WRITE-TRAILER-999.
            EXIT.
@@ -381,35 +400,16 @@
            MOVE WS-PROG-NAME          TO BLG-PGM-ID.
            MOVE SYS-BIZ-DATE          TO BLG-BIZ-DATE.
            MOVE WS-START-DATETIME     TO BLG-START-DT.
-           MOVE SPACES                TO BLG-END-DT.
-           MOVE 'R'                   TO BLG-STAT.
-           MOVE 0                     TO BLG-PROC-CNT.
-           MOVE 0                     TO BLG-ERR-CNT.
            MOVE 'PHASE4 STARTED'      TO BLG-REMARK.
+           MOVE 'START'               TO BLG-ACTION.
 
-           EXEC SQL
-               INSERT INTO TB_BATCH_LOG
-                      (PGM_ID,    BIZ_DATE,    START_DT,
-                       END_DT,    STAT,        PROC_CNT,
-                       ERR_CNT,   REMARK)
-               VALUES (:BLG-PGM-ID,   :BLG-BIZ-DATE, :BLG-START-DT,
-                       :BLG-END-DT,   :BLG-STAT,     :BLG-PROC-CNT,
-                       :BLG-ERR-CNT,  :BLG-REMARK)
-           END-EXEC.
+           CALL 'PGM-BLOGSVR' USING DCL-TB-BATCH-LOG.
 
-           IF SQLCODE = 0 THEN
-               EXEC SQL COMMIT        END-EXEC
-               EXEC SQL
-                   SELECT MAX(BATCH_ID)
-                     INTO :BLG-BATCH-ID
-                     FROM TB_BATCH_LOG
-                    WHERE PGM_ID   = :BLG-PGM-ID
-                      AND BIZ_DATE = :BLG-BIZ-DATE
-               END-EXEC
+           IF BLG-RETURN-CODE NOT = 0 THEN
+               DISPLAY '> [WARN] BLOGSVR START FAILED. RC='
+                       BLG-RETURN-CODE
            ELSE
-               MOVE SQLCODE           TO ERR-SQLCODE
-               MOVE 'BATCH_LOG START INSERT ERROR' TO ERR-DESCRIPTION
-               PERFORM DB-ERROR-000
+               CONTINUE
            END-IF.
 
        BATCHLOG-START-999.
@@ -422,9 +422,9 @@
       *----------------------------------------------------------------*
        BATCHLOG-END                   SECTION.
        BATCHLOG-END-000.
-           MOVE FUNCTION CURRENT-DATE(1:14) TO BLG-END-DT.
            MOVE WS-CALC-CNT           TO BLG-PROC-CNT.
            MOVE WS-ERR-CNT            TO BLG-ERR-CNT.
+           MOVE 'END  '               TO BLG-ACTION.
 
            IF WS-ERR-CNT > 0 THEN
                MOVE 'E'               TO BLG-STAT
@@ -434,20 +434,11 @@
                MOVE 'PHASE4 COMPLETED SUCCESSFULLY' TO BLG-REMARK
            END-IF.
 
-           EXEC SQL
-               UPDATE TB_BATCH_LOG
-                  SET END_DT   = :BLG-END-DT,
-                      STAT     = :BLG-STAT,
-                      PROC_CNT = :BLG-PROC-CNT,
-                      ERR_CNT  = :BLG-ERR-CNT,
-                      REMARK   = :BLG-REMARK
-                WHERE BATCH_ID = :BLG-BATCH-ID
-           END-EXEC.
+           CALL 'PGM-BLOGSVR' USING DCL-TB-BATCH-LOG.
 
-           IF SQLCODE NOT = 0 THEN
-               MOVE SQLCODE           TO ERR-SQLCODE
-               MOVE 'BATCH_LOG END UPDATE ERROR' TO ERR-DESCRIPTION
-               PERFORM DB-ERROR-000
+           IF BLG-RETURN-CODE NOT = 0 THEN
+               DISPLAY '> [WARN] BLOGSVR END FAILED. RC='
+                       BLG-RETURN-CODE
            ELSE
                CONTINUE
            END-IF.

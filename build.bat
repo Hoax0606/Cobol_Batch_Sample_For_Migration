@@ -71,6 +71,10 @@ set "DD_ERRFILE_VAR=%DATA_DIR%\ERROR_DATA.txt"
 echo  ^> Running %BIN_DIR%\PGM-PHASE1.exe...
 echo.
 "%BIN_DIR%\PGM-PHASE1.exe"
+if %ERRORLEVEL% NEQ 0 (
+    echo  ^> [RC=%ERRORLEVEL%] PGM-PHASE1 ABEND. BATCH STOPPED.
+    goto :ERROR_EXIT
+)
 echo.
 
 :: ============================================================
@@ -90,6 +94,10 @@ set "DD_INFILE_VAR=%DATA_DIR%\CLEANSED_DATA.txt"
 echo  ^> Running %BIN_DIR%\PGM-PHASE2.exe...
 echo.
 "%BIN_DIR%\PGM-PHASE2.exe"
+if %ERRORLEVEL% NEQ 0 (
+    echo  ^> [RC=%ERRORLEVEL%] PGM-PHASE2 ABEND. BATCH STOPPED.
+    goto :ERROR_EXIT
+)
 echo.
 
 :: ============================================================
@@ -108,6 +116,10 @@ if %ERRORLEVEL% NEQ 0 goto :ERROR_EXIT
 echo  ^> Running %BIN_DIR%\PGM-PHASE3.exe...
 echo.
 "%BIN_DIR%\PGM-PHASE3.exe"
+if %ERRORLEVEL% NEQ 0 (
+    echo  ^> [RC=%ERRORLEVEL%] PGM-PHASE3 ABEND. BATCH STOPPED.
+    goto :ERROR_EXIT
+)
 echo.
 
 :: ============================================================
@@ -127,6 +139,10 @@ set "DD_OUTFILE_VAR=%DATA_DIR%\SEND_DATA.txt"
 echo  ^> Running %BIN_DIR%\PGM-PHASE4.exe...
 echo.
 "%BIN_DIR%\PGM-PHASE4.exe"
+if %ERRORLEVEL% NEQ 0 (
+    echo  ^> [RC=%ERRORLEVEL%] PGM-PHASE4 ABEND. BATCH STOPPED.
+    goto :ERROR_EXIT
+)
 echo.
 
 :: ============================================================

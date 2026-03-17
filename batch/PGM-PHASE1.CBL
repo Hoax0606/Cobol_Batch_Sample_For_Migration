@@ -58,22 +58,7 @@
            COPY ERR-LOG.
            COPY FILE-CTRL.
            COPY TRX-REC.
-
-      * --- PGM-BLOGSVR 호출용 파라미터 블록 ---
-      *     배치 이력(TB_BATCH_LOG) 기록은 서브프로그램에 위임
-      *     DB 접속 정보는 PGM-BLOGSVR 내부에서 환경변수로 직접 취득
-       01  BLG-PARAMS.
-           05 BLG-ACTION        PIC X(5)    VALUE SPACES.
-           05 BLG-PGM-ID        PIC X(10)   VALUE SPACES.
-           05 BLG-BIZ-DATE      PIC X(8)    VALUE SPACES.
-           05 BLG-START-DT      PIC X(14)   VALUE SPACES.
-           05 BLG-END-DT        PIC X(14)   VALUE SPACES.
-           05 BLG-STAT          PIC X(1)    VALUE SPACES.
-           05 BLG-PROC-CNT      PIC 9(10)   VALUE 0.
-           05 BLG-ERR-CNT       PIC 9(10)   VALUE 0.
-           05 BLG-REMARK        PIC X(100)  VALUE SPACES.
-           05 BLG-BATCH-ID      PIC S9(10)  COMP-3 VALUE 0.
-           05 BLG-RETURN-CODE   PIC 9(4)    VALUE 0.
+           COPY SQL-DCLGEN.
 
        01  WS-FILE-STATUS.
            05 WS-IN-STAT              PIC X(2).
@@ -151,6 +136,7 @@
            PERFORM CHECK-COUNT-000
            PERFORM FINALIZE-000.
        MAIN-999.
+           MOVE SYS-RET-CODE TO RETURN-CODE
            STOP RUN.
       *----------------------------------------------------------------*
       * INIT                          SECTION.
@@ -170,7 +156,9 @@
            IF WS-IN-STAT NOT = '00'
                MOVE 'INPUT FILE OPEN ERROR' TO ERR-DESCRIPTION
                PERFORM ERROR-LOG-000
+               SET BATCH-ERROR TO TRUE
                PERFORM FINALIZE-000
+               MOVE SYS-RET-CODE TO RETURN-CODE
                STOP RUN
            ELSE
                CONTINUE
@@ -179,7 +167,9 @@
            IF WS-OUT-STAT NOT = '00' OR WS-ERR-STAT NOT = '00'
               MOVE 'OUTPUT FILE OPEN ERROR' TO ERR-DESCRIPTION
               PERFORM ERROR-LOG-000
+              SET BATCH-ERROR TO TRUE
               PERFORM FINALIZE-000
+              MOVE SYS-RET-CODE TO RETURN-CODE
               STOP RUN
            ELSE
                CONTINUE
@@ -331,32 +321,33 @@
                   ON OVERFLOW
                       PERFORM VALIDATE-ERR-OVERFLOW-000
                   NOT ON OVERFLOW
-                      CONTINUE
-              END-UNSTRING
-
       *       TRX-SEQ 数値チェック
-              IF WS-TRX-COUNT NOT = 7
-                  PERFORM VALIDATE-ERR-FIELD-000
-              ELSE IF TRX-SEQ NOT NUMERIC OR WS-CNT-SEQ NOT = 10
-                  PERFORM VALIDATE-ERR-SEQ-000
-              ELSE IF INST-CD = SPACES
-                 PERFORM  VALIDATE-ERR-INST-000
-              ELSE IF ACC-NO  = SPACES OR WS-CNT-ACC NOT = 15
-                 PERFORM  VALIDATE-ERR-ACC-000
-              ELSE IF TRX-TYPE NOT EQUAL 'I' AND TRX-TYPE NOT EQUAL 'O'
-                 PERFORM VALIDATE-ERR-TYPE-000
-              ELSE IF WS-LOG-TRX-AMT NOT NUMERIC
-                 PERFORM VALIDATE-ERR-AMT-000
-              ELSE
-                 IF TRX-TYPE = 'I'
-                    MOVE WS-LOG-TRX-AMT TO TRX-AMT
-                    ADD FUNCTION NUMVAL(WS-LOG-TRX-AMT) TO WS-CALC-AMT
-                 ELSE
-                    MOVE WS-LOG-TRX-AMT TO TRX-AMT
-                    SUBTRACT FUNCTION NUMVAL(WS-LOG-TRX-AMT) 
-                             FROM WS-CALC-AMT
-                 END-IF
-              END-IF
+                       IF WS-TRX-COUNT NOT = 7
+                           PERFORM VALIDATE-ERR-FIELD-000
+                       ELSE IF TRX-SEQ NOT NUMERIC 
+                                           OR WS-CNT-SEQ NOT = 10
+                           PERFORM VALIDATE-ERR-SEQ-000
+                       ELSE IF INST-CD = SPACES
+                          PERFORM  VALIDATE-ERR-INST-000
+                       ELSE IF ACC-NO  = SPACES OR WS-CNT-ACC NOT = 15
+                          PERFORM  VALIDATE-ERR-ACC-000
+                       ELSE IF TRX-TYPE NOT EQUAL 'I' 
+                               AND TRX-TYPE NOT EQUAL 'O'
+                          PERFORM VALIDATE-ERR-TYPE-000
+                       ELSE IF WS-LOG-TRX-AMT NOT NUMERIC
+                          PERFORM VALIDATE-ERR-AMT-000
+                       ELSE
+                          IF TRX-TYPE = 'I'
+                             MOVE WS-LOG-TRX-AMT TO TRX-AMT
+                             ADD FUNCTION NUMVAL(WS-LOG-TRX-AMT) 
+                                   TO WS-CALC-AMT
+                          ELSE
+                             MOVE WS-LOG-TRX-AMT TO TRX-AMT
+                             SUBTRACT FUNCTION NUMVAL(WS-LOG-TRX-AMT) 
+                                      FROM WS-CALC-AMT
+                          END-IF
+                       END-IF
+              END-UNSTRING
            END-IF.
                  
        VALIDATE-DATA-999.
@@ -387,7 +378,7 @@
            MOVE IN-REC TO ERR-REC.
            WRITE ERR-REC.
            STRING ' > [' WS-ERR-CODE-AMT '] AMOUNT NOT NUMERIC. SEQ = ['
-                  TRX-SEQ'] / AMOUNT = ['WS-ERR-CODE-AMT']'
+                  TRX-SEQ'] / AMOUNT = ['WS-LOG-TRX-AMT']'
                DELIMITED BY SIZE
                INTO WS-LOG-BUFFER
                WITH POINTER WS-LOG-PTR
@@ -499,7 +490,7 @@
        CHECK-COUNT-000.
 
            DISPLAY ' [DEBUG] '
-                    WS-CALC-CNT ' = ' TRL-TOT-CNT.
+                    WS-CALC-CNT ' + ' WS-ERR-CNT ' = ' TRL-TOT-CNT.
 
            DISPLAY ' [DEBUG] '
                     WS-CALC-AMT ' = ' 
@@ -557,7 +548,7 @@
            MOVE 'PHASE1 STARTED'      TO BLG-REMARK.
            MOVE 'START'               TO BLG-ACTION.
 
-           CALL 'PGM-BLOGSVR' USING BLG-PARAMS.
+           CALL 'PGM-BLOGSVR' USING DCL-TB-BATCH-LOG.
 
            IF BLG-RETURN-CODE NOT = 0 THEN
                DISPLAY '> [WARN] BLOGSVR START FAILED. RC='
@@ -585,7 +576,7 @@
                MOVE 'PHASE1 COMPLETED SUCCESSFULLY' TO BLG-REMARK
            END-IF.
 
-           CALL 'PGM-BLOGSVR' USING BLG-PARAMS.
+           CALL 'PGM-BLOGSVR' USING DCL-TB-BATCH-LOG.
 
            IF BLG-RETURN-CODE NOT = 0 THEN
                DISPLAY '> [WARN] BLOGSVR END FAILED. RC='
@@ -598,4 +589,4 @@
       *================================================================*
       * END OF PGM-PHASE1
       *================================================================*
-      
+           
