@@ -4,15 +4,15 @@
       * ?? ??:
       *
       *  [INIT]
-      *    DB ?? ù® TB_BATCH_LOG INSERT(??)
-      *    ù® CURSOR C-STG-TRX OPEN
+      *    DB ?? Å® TB_BATCH_LOG INSERT(??)
+      *    Å® CURSOR C-STG-TRX OPEN
       *
-      *  [PROCESS Éãù[Év]  ù©ÑüÑü CURSOR FETCH (TB_STG_TRX)
+      *  [PROCESS ÉãÅ[Év]  Å©ÑüÑü CURSOR FETCH (TB_STG_TRX)
       *    Ñ†
       *    Ñ•Ñü SELECT TB_INST_MASTER WHERE INST_CD = :STG-INST-CD
-      *    Ñ†         (JOIN: ???ùE???? ??)
+      *    Ñ†         (JOIN: ???ÅE???? ??)
       *    Ñ†
-      *    Ñ•Ñü COMPUTE ??? ??? (TRX_AMT ù~ FEE_RATE)
+      *    Ñ•Ñü COMPUTE ??? ??? (TRX_AMT Å~ FEE_RATE)
       *    Ñ†
       *    Ñ•Ñü INSERT TB_TRX_DETAIL
       *    Ñ†         (STG + INST_MASTER JOIN ?? ?? ??)
@@ -23,13 +23,13 @@
       *
       *  [FINALIZE]
       *    á@ CURSOR CLOSE / ?? COMMIT
-      *    áA DELETE + INSERT ù® TB_INST_DAILY_STAT
+      *    áA DELETE + INSERT Å® TB_INST_DAILY_STAT
       *       (???? ?? ??? ??? ?? ??? ??)
       *    áB CURSOR C-DAILY-STAT-JOIN OPEN
       *       SELECT TB_INST_DAILY_STAT D
       *         JOIN TB_INST_MASTER     M ON D.INST_CD = M.INST_CD
-      *       ù® DELETE + INSERT ù® TB_NET_SUMMARY
-      *          (DAILY_STAT + INST_MASTER MERGE ù® ?? ?? ??)
+      *       Å® DELETE + INSERT Å® TB_NET_SUMMARY
+      *          (DAILY_STAT + INST_MASTER MERGE Å® ?? ?? ??)
       *    áC TB_BATCH_LOG UPDATE (?? ??)
       *
       *================================================================*
@@ -85,7 +85,100 @@
 
       * --- SQLCA ? DCLGEN ---
            EXEC SQL INCLUDE SQLCA      END-EXEC.
-           EXEC SQL INCLUDE SQL-DCLGEN END-EXEC.
+      *    EXEC SQL INCLUDE SQL-DCLGEN END-EXEC.
+
+      *----------------------------------------------------------------*
+      * TB_STG_TRX (??)
+      *----------------------------------------------------------------*
+       01  DCL-TB-STG-TRX.
+           05 STG-TRX-DATE            PIC X(8).
+           05 STG-TRX-SEQ             PIC S9(10) COMP-3.
+           05 STG-INST-CD             PIC X(4).
+           05 STG-ACC-NO              PIC X(15).
+           05 STG-TRX-TYPE            PIC X(1).
+           05 STG-TRX-AMT             PIC S9(12) COMP-3.
+           05 STG-FEE-AMT             PIC S9(12) COMP-3.
+           05 STG-PROC-STAT           PIC X(1).
+
+      *----------------------------------------------------------------*
+      * TB_INST_MASTER (??)
+      *----------------------------------------------------------------*
+       01  DCL-TB-INST-MASTER.
+           05 INST-MAST-CD            PIC X(4).
+           05 INST-MAST-NAME          PIC X(20).
+           05 INST-MAST-STAT          PIC X(1).
+           05 INST-MAST-FEE-RATE      PIC S9(3)V9(4) COMP-3.
+
+      *----------------------------------------------------------------*
+      * TB_NET_SUMMARY (?? + INST_NAME / FEE_RATE / TOT_FEE_AMT ??)
+      * DDL ??:
+      *   ALTER TABLE TB_NET_SUMMARY ADD COLUMN INST_NAME   TEXT(20);
+      *   ALTER TABLE TB_NET_SUMMARY ADD COLUMN FEE_RATE    NUMERIC(7,4);
+      *   ALTER TABLE TB_NET_SUMMARY ADD COLUMN TOT_FEE_AMT NUMERIC(15,0);
+      *
+      * PHASE3 FINALIZE ?? TB_INST_DAILY_STAT + TB_INST_MASTER JOIN
+      * ??(C-DAILY-STAT-JOIN)? SELECT ? ? ???? ?? INSERT
+      *----------------------------------------------------------------*
+       01  DCL-TB-NET-SUMMARY.
+           05 SUM-SETTLE-DATE         PIC X(8).
+           05 SUM-INST-CD             PIC X(4).
+           05 SUM-INST-NAME           PIC X(20).
+           05 SUM-FEE-RATE            PIC S9(3)V9(4) COMP-3.
+           05 SUM-TOT-IN              PIC S9(15) COMP-3.
+           05 SUM-TOT-OUT             PIC S9(15) COMP-3.
+           05 SUM-NET-AMT             PIC S9(15) COMP-3.
+           05 SUM-TOT-FEE             PIC S9(15) COMP-3.
+           05 SUM-TOT-CNT             PIC S9(10) COMP-3.
+
+      *----------------------------------------------------------------*
+      * TB_TRX_DETAIL (??)
+      * TB_STG_TRX + TB_INST_MASTER ? JOIN ? ??? ??? ??
+      * INST_NAME / FEE_RATE ? INST_MASTER SELECT ???? ?? SET
+      *----------------------------------------------------------------*
+       01  DCL-TB-TRX-DETAIL.
+           05 DTL-SETTLE-DATE         PIC X(8).
+           05 DTL-TRX-SEQ             PIC S9(10) COMP-3.
+           05 DTL-INST-CD             PIC X(4).
+           05 DTL-INST-NAME           PIC X(20).
+           05 DTL-ACC-NO              PIC X(15).
+           05 DTL-TRX-TYPE            PIC X(1).
+           05 DTL-TRX-AMT             PIC S9(12) COMP-3.
+           05 DTL-STG-FEE-AMT         PIC S9(12) COMP-3.
+           05 DTL-FEE-RATE            PIC S9(3)V9(4) COMP-3.
+           05 DTL-CALC-FEE-AMT        PIC S9(12) COMP-3.
+           05 DTL-PROC-STAT           PIC X(1).
+
+      *----------------------------------------------------------------*
+      * TB_INST_DAILY_STAT (??)
+      * COBOL ???? ?? Å® INSERT
+      * FINALIZE ? TB_INST_MASTER JOIN ??? FROM ??
+      *----------------------------------------------------------------*
+       01  DCL-TB-INST-DAILY-STAT.
+           05 IDS-SETTLE-DATE         PIC X(8).
+           05 IDS-INST-CD             PIC X(4).
+           05 IDS-TOT-IN              PIC S9(15) COMP-3.
+           05 IDS-TOT-OUT             PIC S9(15) COMP-3.
+           05 IDS-NET-AMT             PIC S9(15) COMP-3.
+           05 IDS-TOT-FEE             PIC S9(15) COMP-3.
+           05 IDS-TOTAL-CNT           PIC S9(10) COMP-3.
+
+      *----------------------------------------------------------------*
+      * TB_BATCH_LOG (??)
+      *----------------------------------------------------------------*
+       01  DCL-TB-BATCH-LOG.
+           05 BLG-ACTION              PIC X(5).
+              88 BLG-START            VALUE 'START'.
+              88 BLG-END              VALUE 'END  '.
+           05 BLG-PGM-ID              PIC X(10).
+           05 BLG-BIZ-DATE            PIC X(8).
+           05 BLG-START-DT            PIC X(14).
+           05 BLG-END-DT              PIC X(14).
+           05 BLG-STAT                PIC X(1).
+           05 BLG-PROC-CNT            PIC 9(10).
+           05 BLG-ERR-CNT             PIC 9(10).
+           05 BLG-REMARK              PIC X(100).
+           05 BLG-BATCH-ID            PIC S9(10) COMP-3.
+           05 BLG-RETURN-CODE         PIC 9(4).
 
       * --- ???? ?? ??? ---
        01  WS-FLAGS.
@@ -136,8 +229,8 @@
 
       *----------------------------------------------------------------*
       * CURSOR 1 : C-STG-TRX
-      *   TB_STG_TRX ??? ???? ????ùE?? ??? FETCH
-      *   ù® INST_CD ? TB_INST_MASTER SELECT(JOIN) ? TB_TRX_DETAIL INSERT
+      *   TB_STG_TRX ??? ???? ????ÅE?? ??? FETCH
+      *   Å® INST_CD ? TB_INST_MASTER SELECT(JOIN) ? TB_TRX_DETAIL INSERT
       *----------------------------------------------------------------*
            EXEC SQL
                DECLARE C-STG-TRX CURSOR FOR
@@ -153,7 +246,7 @@
       *----------------------------------------------------------------*
       * CURSOR 2 : C-DAILY-STAT-JOIN
       *   TB_INST_DAILY_STAT + TB_INST_MASTER JOIN
-      *   ù® ???ùE????? ?? ?? TB_NET_SUMMARY INSERT (MERGE)
+      *   Å® ???ÅE????? ?? ?? TB_NET_SUMMARY INSERT (MERGE)
       *----------------------------------------------------------------*
            EXEC SQL
                DECLARE C-DAILY-STAT-JOIN CURSOR FOR
@@ -261,10 +354,10 @@
       *----------------------------------------------------------------*
       * DATA-PROCESS                  SECTION.
       *----------------------------------------------------------------*
-      * C-STG-TRX FETCH ù® TB_INST_MASTER JOIN SELECT
-      *                 ù® TB_TRX_DETAIL INSERT
-      *                 ù® NETTING-TABLE ??
-      *                 ù® TB_STG_TRX PROC_STAT UPDATE
+      * C-STG-TRX FETCH Å® TB_INST_MASTER JOIN SELECT
+      *                 Å® TB_TRX_DETAIL INSERT
+      *                 Å® NETTING-TABLE ??
+      *                 Å® TB_STG_TRX PROC_STAT UPDATE
       *----------------------------------------------------------------*
        DATA-PROCESS                   SECTION.
        PROCESS-000.
@@ -295,9 +388,9 @@
       *----------------------------------------------------------------*
       * JOIN-INST-MASTER              SECTION.
       *----------------------------------------------------------------*
-      * TB_INST_MASTER SELECT ù® ???ùE???? ?? (JOIN ??)
-      * SQLCODE=0  : ??? ??? ù® DETAIL INSERT ù® ?? ù® STG UPDATE
-      * SQLCODE=100: ? ? ?? ?? ù® WARN ?? ? SKIP
+      * TB_INST_MASTER SELECT Å® ???ÅE???? ?? (JOIN ??)
+      * SQLCODE=0  : ??? ??? Å® DETAIL INSERT Å® ?? Å® STG UPDATE
+      * SQLCODE=100: ? ? ?? ?? Å® WARN ?? ? SKIP
       *----------------------------------------------------------------*
        JOIN-INST-MASTER               SECTION.
        JOIN-INST-MASTER-000.
@@ -306,7 +399,7 @@
            EXEC SQL
                SELECT INST_CD,    INST_NAME,
                       INST_STAT,  FEE_RATE
-                 INTO INST-MAST-CD,       :INST-MAST-NAME,
+                 INTO :INST-MAST-CD,       :INST-MAST-NAME,
                       :INST-MAST-STAT,     :INST-MAST-FEE-RATE
                  FROM TB_INST_MASTER
                 WHERE INST_CD = :INST-MAST-CD
@@ -350,9 +443,9 @@
       *----------------------------------------------------------------*
       * TB_STG_TRX(FETCH) + TB_INST_MASTER(JOIN) ???
       * TB_TRX_DETAIL ? ?? ??
-      *   DTL-INST-NAME  ù© INST-MAST-NAME  (INST_MASTER JOIN)
-      *   DTL-FEE-RATE   ù© INST-MAST-FEE-RATE (INST_MASTER JOIN)
-      *   DTL-CALC-FEE-AMT ù© WS-FEE-WORK (???)
+      *   DTL-INST-NAME  Å© INST-MAST-NAME  (INST_MASTER JOIN)
+      *   DTL-FEE-RATE   Å© INST-MAST-FEE-RATE (INST_MASTER JOIN)
+      *   DTL-CALC-FEE-AMT Å© WS-FEE-WORK (???)
       *----------------------------------------------------------------*
        INSERT-TRX-DETAIL              SECTION.
        INSERT-TRX-DETAIL-000.
@@ -446,7 +539,7 @@
       *----------------------------------------------------------------*
       * UPDATE-STG-STAT               SECTION.
       *----------------------------------------------------------------*
-      * TB_STG_TRX.PROC_STAT ù® '9' (?? ?? ??)
+      * TB_STG_TRX.PROC_STAT Å® '9' (?? ?? ??)
       *----------------------------------------------------------------*
        UPDATE-STG-STAT                SECTION.
        UPDATE-STG-STAT-000.
@@ -501,7 +594,7 @@
                CONTINUE
            END-IF.
 
-      * --- á@ TB_INST_DAILY_STAT : ???? ?? ù® DB ?? ---
+      * --- á@ TB_INST_DAILY_STAT : ???? ?? Å® DB ?? ---
            PERFORM DELETE-INST-STAT-000.
            EXEC SQL COMMIT            END-EXEC.
 
@@ -590,7 +683,7 @@
       *----------------------------------------------------------------*
       * INSERT-INST-STAT              SECTION.
       *----------------------------------------------------------------*
-      * NETTING-TABLE(???) ù® TB_INST_DAILY_STAT INSERT
+      * NETTING-TABLE(???) Å® TB_INST_DAILY_STAT INSERT
       *----------------------------------------------------------------*
        INSERT-INST-STAT               SECTION.
        INSERT-INST-STAT-000.
@@ -682,10 +775,10 @@
       *----------------------------------------------------------------*
       * C-DAILY-STAT-JOIN FETCH
       *   TB_INST_DAILY_STAT D JOIN TB_INST_MASTER M ??? ??
-      *   TB_NET_SUMMARY ? INSERT (JOIN ù® MERGE)
+      *   TB_NET_SUMMARY ? INSERT (JOIN Å® MERGE)
       *
-      *   SUM-INST-NAME ù© M.INST_NAME   (INST_MASTER JOIN)
-      *   SUM-FEE-RATE  ù© M.FEE_RATE    (INST_MASTER JOIN)
+      *   SUM-INST-NAME Å© M.INST_NAME   (INST_MASTER JOIN)
+      *   SUM-FEE-RATE  Å© M.FEE_RATE    (INST_MASTER JOIN)
       *----------------------------------------------------------------*
        FETCH-AND-INSERT-SUMMARY       SECTION.
        FETCH-AND-INSERT-SUMMARY-000.
@@ -716,7 +809,7 @@
       *----------------------------------------------------------------*
       * INSERT-NET-SUMMARY            SECTION.
       *----------------------------------------------------------------*
-      * JOIN ?? (DAILY_STAT + INST_MASTER) ù® TB_NET_SUMMARY INSERT
+      * JOIN ?? (DAILY_STAT + INST_MASTER) Å® TB_NET_SUMMARY INSERT
       *----------------------------------------------------------------*
        INSERT-NET-SUMMARY             SECTION.
        INSERT-NET-SUMMARY-000.
