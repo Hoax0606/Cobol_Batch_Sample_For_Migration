@@ -129,7 +129,24 @@
            05 TRX-AMT           PIC 9(12).
       *    
       *VAF Embedded Finish======================================================
-           COPY SQL-DCLGEN.
+
+      *----------------------------------------------------------------*
+      * TB_BATCH_LOG (??)
+      *----------------------------------------------------------------*
+       01  DCL-TB-BATCH-LOG.
+           05 BLG-ACTION              PIC X(5).
+              88 BLG-START            VALUE 'START'.
+              88 BLG-END              VALUE 'END  '.
+           05 BLG-PGM-ID              PIC X(10).
+           05 BLG-BIZ-DATE            PIC X(8).
+           05 BLG-START-DT            PIC X(14).
+           05 BLG-END-DT              PIC X(14).
+           05 BLG-STAT                PIC X(1).
+           05 BLG-PROC-CNT            PIC 9(10).
+           05 BLG-ERR-CNT             PIC 9(10).
+           05 BLG-REMARK              PIC X(100).
+           05 BLG-BATCH-ID            PIC S9(10) COMP-3.
+           05 BLG-RETURN-CODE         PIC 9(4).
 
        01  WS-FILE-STATUS.
            05 WS-IN-STAT              PIC X(2).

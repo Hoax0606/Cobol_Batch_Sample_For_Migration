@@ -112,7 +112,6 @@
 
       * --- SQLCA ? DB DCLGEN ---
        EXEC SQL INCLUDE SQLCA END-EXEC.
-      *EXEC SQL INCLUDE SQL-DCLGEN END-EXEC.
 
       *----------------------------------------------------------------*
       * TB_STG_TRX (??)
@@ -135,59 +134,6 @@
            05 INST-MAST-NAME          PIC X(20).
            05 INST-MAST-STAT          PIC X(1).
            05 INST-MAST-FEE-RATE      PIC S9(3)V9(4) COMP-3.
-
-      *----------------------------------------------------------------*
-      * TB_NET_SUMMARY (?? + INST_NAME / FEE_RATE / TOT_FEE_AMT ??)
-      * DDL ??:
-      *   ALTER TABLE TB_NET_SUMMARY ADD COLUMN INST_NAME   TEXT(20);
-      *   ALTER TABLE TB_NET_SUMMARY ADD COLUMN FEE_RATE    NUMERIC(7,4);
-      *   ALTER TABLE TB_NET_SUMMARY ADD COLUMN TOT_FEE_AMT NUMERIC(15,0);
-      *
-      * PHASE3 FINALIZE ?? TB_INST_DAILY_STAT + TB_INST_MASTER JOIN
-      * ??(C-DAILY-STAT-JOIN)? SELECT ? ? ???? ?? INSERT
-      *----------------------------------------------------------------*
-       01  DCL-TB-NET-SUMMARY.
-           05 SUM-SETTLE-DATE         PIC X(8).
-           05 SUM-INST-CD             PIC X(4).
-           05 SUM-INST-NAME           PIC X(20).
-           05 SUM-FEE-RATE            PIC S9(3)V9(4) COMP-3.
-           05 SUM-TOT-IN              PIC S9(15) COMP-3.
-           05 SUM-TOT-OUT             PIC S9(15) COMP-3.
-           05 SUM-NET-AMT             PIC S9(15) COMP-3.
-           05 SUM-TOT-FEE             PIC S9(15) COMP-3.
-           05 SUM-TOT-CNT             PIC S9(10) COMP-3.
-
-      *----------------------------------------------------------------*
-      * TB_TRX_DETAIL (??)
-      * TB_STG_TRX + TB_INST_MASTER ? JOIN ? ??? ??? ??
-      * INST_NAME / FEE_RATE ? INST_MASTER SELECT ???? ?? SET
-      *----------------------------------------------------------------*
-       01  DCL-TB-TRX-DETAIL.
-           05 DTL-SETTLE-DATE         PIC X(8).
-           05 DTL-TRX-SEQ             PIC S9(10) COMP-3.
-           05 DTL-INST-CD             PIC X(4).
-           05 DTL-INST-NAME           PIC X(20).
-           05 DTL-ACC-NO              PIC X(15).
-           05 DTL-TRX-TYPE            PIC X(1).
-           05 DTL-TRX-AMT             PIC S9(12) COMP-3.
-           05 DTL-STG-FEE-AMT         PIC S9(12) COMP-3.
-           05 DTL-FEE-RATE            PIC S9(3)V9(4) COMP-3.
-           05 DTL-CALC-FEE-AMT        PIC S9(12) COMP-3.
-           05 DTL-PROC-STAT           PIC X(1).
-
-      *----------------------------------------------------------------*
-      * TB_INST_DAILY_STAT (??)
-      * COBOL ???? ?? Å® INSERT
-      * FINALIZE ? TB_INST_MASTER JOIN ??? FROM ??
-      *----------------------------------------------------------------*
-       01  DCL-TB-INST-DAILY-STAT.
-           05 IDS-SETTLE-DATE         PIC X(8).
-           05 IDS-INST-CD             PIC X(4).
-           05 IDS-TOT-IN              PIC S9(15) COMP-3.
-           05 IDS-TOT-OUT             PIC S9(15) COMP-3.
-           05 IDS-NET-AMT             PIC S9(15) COMP-3.
-           05 IDS-TOT-FEE             PIC S9(15) COMP-3.
-           05 IDS-TOTAL-CNT           PIC S9(10) COMP-3.
 
       *----------------------------------------------------------------*
       * TB_BATCH_LOG (??)

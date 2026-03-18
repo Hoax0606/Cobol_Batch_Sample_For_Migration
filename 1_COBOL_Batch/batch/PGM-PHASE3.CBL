@@ -62,7 +62,6 @@
 
       * --- SQLCA 및 DCLGEN ---
            EXEC SQL INCLUDE SQLCA      END-EXEC.
-      *    EXEC SQL INCLUDE SQL-DCLGEN END-EXEC.
 
       *----------------------------------------------------------------*
       * TB_STG_TRX (기존)
