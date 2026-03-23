@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.KSInfo.batch.dao.Phase2Dao">
+    <delete id="delete_01" parameterType="java.util.Map"><![CDATA[
+        DELETE FROM TB_STG_TRX
+    ]]></delete>
+
+    <select id="select_01" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
+        SELECT INST_CD,
+           INST_STAT,
+           FEE_RATE
+        FROM TB_INST_MASTER
+        WHERE INST_CD = #{instCd}
+    ]]></select>
+
+    <insert id="insert_01" parameterType="java.util.Map"><![CDATA[
+        INSERT INTO TB_STG_TRX
+            (TRX_DATE,    
+             TRX_SEQ,     
+             INST_CD,
+             ACC_NO,      
+             TRX_TYPE,    
+             TRX_AMT,
+             FEE_AMT,     
+             PROC_STAT)
+        VALUES (#{STG-TRX-DATE},
+                #{STG-TRX-SEQ},
+                #{STG-INST-CD},  
+                #{STG-ACC-NO},
+                #{STG-TRX-TYPE}, 
+                #{STG-TRX-AMT},
+                #{STG-FEE-AMT},  
+                #{STG-PROC-STAT})
+    ]]></insert>
+
+</mapper>

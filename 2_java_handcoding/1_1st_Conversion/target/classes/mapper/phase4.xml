@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.KSInfo.batch.dao.Phase4Dao">
+    <select id="select_01" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
+        SELECT SETTLE_DATE, 
+               INST_CD,
+               INST_NAME,
+               TOT_IN_AMT, 
+               TOT_OUT_AMT, 
+               NET_AMT,
+               TOT_FEE_AMT, 
+               TOTAL_CNT
+        FROM TB_NET_SUMMARY
+        WHERE SETTLE_DATE = #{WS-BIZ-DATE-W}
+        ORDER BY INST_CD ASC
+    ]]></select>
+
+</mapper>

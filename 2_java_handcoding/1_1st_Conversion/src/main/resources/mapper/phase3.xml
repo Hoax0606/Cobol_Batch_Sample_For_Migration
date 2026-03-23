@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.KSInfo.batch.dao.Phase3Dao">
+    <select id="select_01" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
+        SELECT TRX_DATE,
+               TRX_SEQ,
+               INST_CD,
+               ACC_NO,
+               TRX_TYPE,
+               TRX_AMT,
+               FEE_AMT
+         FROM TB_STG_TRX
+         WHERE PROC_STAT = '0'
+         ORDER BY INST_CD ASC, TRX_SEQ ASC
+    ]]></select>
+
+    <select id="select_02" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
+        SELECT D.SETTLE_DATE,
+               D.INST_CD,
+               M.INST_NAME,
+               M.FEE_RATE,
+               D.TOT_IN_AMT,
+               D.TOT_OUT_AMT,
+               D.NET_AMT,
+               D.TOT_FEE_AMT,
+               D.TOTAL_CNT
+        FROM TB_INST_DAILY_STAT D
+        JOIN TB_INST_MASTER     M
+        ON D.INST_CD     = M.INST_CD
+        WHERE D.SETTLE_DATE = #{IDS-SETTLE-DATE}
+        ORDER BY D.INST_CD  ASC
+    ]]></select>
+
+    <select id="select_03" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
+        SELECT INST_CD,
+               INST_NAME,
+               INST_STAT,
+               FEE_RATE
+        FROM TB_INST_MASTER
+        WHERE INST_CD = #{INST-MAST-CD}
+    ]]></select>
+
+    <insert id="insert_01" parameterType="java.util.Map"><![CDATA[
+        INSERT INTO TB_TRX_DETAIL
+               (SETTLE_DATE,
+                TRX_SEQ,
+                INST_CD,
+                INST_NAME,
+                ACC_NO,
+                TRX_TYPE,
+                TRX_AMT,
+                STG_FEE_AMT,
+                FEE_RATE,
+                CALC_FEE_AMT,
+                PROC_STAT)
+        VALUES (#{DTL-SETTLE-DATE}, 
+                #{DTL-TRX-SEQ},    
+                #{DTL-INST-CD},
+                #{DTL-INST-NAME},   
+                #{DTL-ACC-NO},     
+                #{DTL-TRX-TYPE},
+                #{DTL-TRX-AMT},     
+                #{DTL-STG-FEE-AMT},
+                #{DTL-FEE-RATE},
+                #{DTL-CALC-FEE-AMT},
+                #{DTL-PROC-STAT})
+    ]]></insert>
+
+    <update id="update_01" parameterType="java.util.Map"><![CDATA[
+        UPDATE TB_STG_TRX
+        SET PROC_STAT = '9'
+        WHERE TRX_DATE = #{STG-TRX-DATE}
+        AND TRX_SEQ  = #{STG-TRX-SEQ}
+    ]]></update>
+
+    <delete id="delete_01" parameterType="java.util.Map"><![CDATA[
+        DELETE FROM TB_TRX_DETAIL
+         WHERE SETTLE_DATE = #{DTL-SETTLE-DATE}
+    ]]></delete>
+
+
+    <delete id="delete_02" parameterType="java.util.Map"><![CDATA[
+        DELETE FROM TB_INST_DAILY_STAT
+         WHERE SETTLE_DATE = #{IDS-SETTLE-DATE}
+    ]]></delete>
+
+    <insert id="insert_02" parameterType="java.util.Map"><![CDATA[
+        INSERT INTO TB_INST_DAILY_STAT
+               (SETTLE_DATE,
+                INST_CD,
+                TOT_IN_AMT,
+                TOT_OUT_AMT,
+                NET_AMT,
+                TOT_FEE_AMT,
+                TOTAL_CNT)
+        VALUES (#{IDS-SETTLE-DATE}, 
+                #{IDS-INST-CD},
+                #{IDS-TOT-IN},      
+                #{IDS-TOT-OUT},
+                #{IDS-NET-AMT},     
+                #{IDS-TOT-FEE},
+                #{IDS-TOTAL-CNT})
+    ]]></insert>
+
+    <delete id="delete_03" parameterType="java.util.Map"><![CDATA[
+        DELETE FROM TB_NET_SUMMARY
+         WHERE SETTLE_DATE = #{SUM-SETTLE-DATE}
+    ]]></delete>
+
+    <insert id="insert_03" parameterType="java.util.Map"><![CDATA[
+        INSERT INTO TB_NET_SUMMARY
+               (SETTLE_DATE,
+                INST_CD,
+                INST_NAME,
+                FEE_RATE,
+                TOT_IN_AMT,
+                TOT_OUT_AMT,
+                NET_AMT,
+                TOT_FEE_AMT,
+                TOTAL_CNT)
+        VALUES (#{SUM-SETTLE-DATE}, 
+                #{SUM-INST-CD},
+                #{SUM-INST-NAME},   
+                #{SUM-FEE-RATE},
+                #{SUM-TOT-IN},      
+                #{SUM-TOT-OUT},
+                #{SUM-NET-AMT},     
+                #{SUM-TOT-FEE},
+                #{SUM-TOT-CNT})
+    ]]></insert>
+
+</mapper>

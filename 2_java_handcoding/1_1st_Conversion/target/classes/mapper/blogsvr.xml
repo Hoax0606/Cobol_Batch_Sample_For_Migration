@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.KSInfo.batch.dao.BlogsvrDao">
+    <insert id="insert_01" parameterType="java.util.Map"><![CDATA[
+        INSERT INTO TB_BATCH_LOG
+            (PGM_ID,        
+             BIZ_DATE,      
+             START_DT,
+             END_DT,        
+             STAT,          
+             PROC_CNT,
+             ERR_CNT,       
+             REMARK)
+        VALUES (#{BLG-PGM-ID},   
+                #{BLG-BIZ-DATE}, 
+                #{BLG-START-DT},
+                #{BLG-END-DT},   
+                #{BLG-STAT},     
+                #{BLG-PROC-CNT},
+                #{BLG-ERR-CNT},  
+                #{BLG-REMARK})
+    ]]></insert>
+
+    <select id="select_01" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
+        SELECT MAX(BATCH_ID) AS BATCH_ID
+        FROM TB_BATCH_LOG
+        WHERE PGM_ID   = #{BLG-PGM-ID}
+        AND BIZ_DATE = #{BLG-BIZ-DATE}
+    ]]></select>
+
+    <update id="update_01" parameterType="java.util.Map"><![CDATA[
+        UPDATE TB_BATCH_LOG
+        SET END_DT   = #{BLG-END-DT},
+            STAT     = #{BLG-STAT},
+            PROC_CNT = #{BLG-PROC-CNT},
+            ERR_CNT  = #{BLG-ERR-CNT},
+            REMARK   = #{BLG-REMARK}
+        WHERE BATCH_ID = #{BLG-BATCH-ID}
+    ]]></update>
+
+</mapper>
