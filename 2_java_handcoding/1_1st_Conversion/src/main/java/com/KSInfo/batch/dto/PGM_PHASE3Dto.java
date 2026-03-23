@@ -1,22 +1,8 @@
-package PHASE3;
+package com.KSInfo.batch.dto;
 
 import lombok.Data;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
-import PHASE2.WS_COUNTERSDto;
-import PHASE2.WS_DB_CONNDto;
-import copy.ERR_LOG_AREADto;
-import PHASE1.DCL_TB_STG_TRXDto;
-import PHASE1.DCL_TB_BATCH_LOGDto;
-import PHASE1.DCL_TB_INST_DAILY_STATDto;
-import PHASE1.DCL_TB_INST_MASTERDto;
-import PHASE1.DCL_TB_NET_SUMMARYDto;
-import PHASE1.DCL_TB_TRX_DETAILDto;
-import PHASE1.WS_FLAGSDto;
-import PHASE2.WS_WORK_AREASDto_2;
-
 
 @Data
 public class PGM_PHASE3Dto{

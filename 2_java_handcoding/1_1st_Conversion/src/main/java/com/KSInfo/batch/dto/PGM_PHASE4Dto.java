@@ -1,15 +1,8 @@
-package PHASE4;
+package com.KSInfo.batch.dto;
 
-import PHASE1.DCL_TB_BATCH_LOGDto;
-import PHASE1.DCL_TB_NET_SUMMARYDto;
-import PHASE1.WS_CALC_TOTALSDto;
-import PHASE2.WS_COUNTERSDto;
-import PHASE2.WS_DB_CONNDto;
-import PHASE2.WS_FLAGSDto_2;
-import PHASE2.WS_WORK_AREASDto_2;
-import copy.ERR_LOG_AREADto;
-import copy.FILE_CONTROL_RECDto;
+import lombok.Data;
 
+@Data
 public class PGM_PHASE4Dto{
     private  String OUT_REC;
     //01  DATA_REC REDEFINES OUT_REC

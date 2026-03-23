@@ -1,5 +1,9 @@
+package com.KSInfo.batch.dto;
+
+import lombok.Data;
 import java.util.Arrays;
 
+@Data
 public class FILE_CONTROL_RECDto {
     private REC_TYPEReturnCode REC_TYPE;
     private String REC_CONTENT;

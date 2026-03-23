@@ -1,11 +1,8 @@
-package PHASE2;
+package com.KSInfo.batch.dto;
 
-import PHASE1.DCL_TB_BATCH_LOGDto;
-import PHASE1.DCL_TB_INST_MASTERDto;
-import PHASE1.DCL_TB_STG_TRXDto;
-import copy.ERR_LOG_AREADto;
-import copy.SYS_COMMON_AREADto;
+import lombok.Data;
 
+@Data
 public class PGM_PHASE2Dto{
     private String IN_REC;
 

@@ -1,7 +1,10 @@
-package PHASE1;
+package com.KSInfo.batch.dto;
+
+import lombok.Data;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
+@Data
 public class DCL_TB_BATCH_LOGDto {
     private BLG_ACTIONReturnCode BLG_ACTION;
     private String BLG_PGM_ID;

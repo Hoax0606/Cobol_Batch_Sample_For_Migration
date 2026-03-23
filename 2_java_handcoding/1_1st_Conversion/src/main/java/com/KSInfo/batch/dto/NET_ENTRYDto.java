@@ -1,7 +1,9 @@
-package PHASE3;
+package com.KSInfo.batch.dto;
 
+import lombok.Data;
 import java.math.BigDecimal;
 
+@Data
 public class NET_ENTRYDto {
 
     private String NET_INST_CD;

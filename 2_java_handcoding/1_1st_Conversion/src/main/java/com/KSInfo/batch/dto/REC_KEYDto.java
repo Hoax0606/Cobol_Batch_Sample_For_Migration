@@ -1,5 +1,8 @@
-package PHASE4;
+package com.KSInfo.batch.dto;
 
+import lombok.Data;
+
+@Data
 public class REC_KEYDto {
     private String OUT_DATA_TYPE;
     private String OUT_SETTLE_DATE;

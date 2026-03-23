@@ -1,4 +1,8 @@
-package PHASE2;
+package com.KSInfo.batch.dto;
+
+import lombok.Data;
+
+@Data
 public class WS_COUNTERSDto {
     private long WS_READ_CNT = 0;
     private long WS_INSERT_CNT = 0;

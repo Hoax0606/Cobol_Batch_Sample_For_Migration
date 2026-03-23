@@ -1,6 +1,9 @@
-package PHASE1;
+package com.KSInfo.batch.dto;
+
+import lombok.Data;
 import java.math.BigDecimal;
 
+@Data
 public class DCL_TB_TRX_DETAILDto {
     private String DTL_SETTLE_DATE;
     private BigDecimal DTL_TRX_SEQ = BigDecimal.ZERO;;

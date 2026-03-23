@@ -1,5 +1,8 @@
-package PHASE2;
+package com.KSInfo.batch.dto;
 
+import lombok.Data;
+
+@Data
 public class WS_FILE_STATUSDto_2 {
     private String WS_IN_STAT;
 }

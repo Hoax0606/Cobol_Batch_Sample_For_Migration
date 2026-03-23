@@ -1,5 +1,8 @@
-package PHASE4;
+package com.KSInfo.batch.dto;
 
+import lombok.Data;
+
+@Data
 public class WS_EDIT_AREADto {
     private String ED_TOT_IN;
     private String ED_TOT_OUT;

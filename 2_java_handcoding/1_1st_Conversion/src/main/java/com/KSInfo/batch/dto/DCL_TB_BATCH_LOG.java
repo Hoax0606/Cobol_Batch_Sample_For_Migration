@@ -6,6 +6,18 @@ import java.math.BigDecimal;
 @Data
 public class DCL_TB_BATCH_LOG {
 
+    private BLG_ACTION BLG_ACTION;
+    private String BLG_PGM_ID;
+    private String BLG_BIZ_DATE;
+    private String BLG_START_DT;
+    private String BLG_END_DT;
+    private String BLG_STAT;
+    private long BLG_PROC_CNT;
+    private long BLG_ERR_CNT;
+    private String BLG_REMARK;
+    private BigDecimal BLG_BATCH_ID;
+    private int BLG_RETURN_CODE;
+
     private enum BLG_ACTION {
 
         BLG_START ("START"),
@@ -25,7 +37,7 @@ public class DCL_TB_BATCH_LOG {
             if (raw == null || raw.isEmpty()) {
                 throw new IllegalArgumentException("Record is null or empty");
             }
-            String code = raw.substring(0, 4); 
+            String code = raw.substring(0, 5); 
             for (BLG_ACTION type : values()) {
                 if (type.value.equals(code)) return type;
                 
@@ -34,16 +46,5 @@ public class DCL_TB_BATCH_LOG {
             throw new IllegalArgumentException("Unknown RecordType: [" + code + "]");
         }
     }
-    
-    private String BLG_PGM_ID;
-    private String BLG_BIZ_DATE;
-    private String BLG_START_DT;
-    private String BLG_END_DT;
-    private String BLG_STAT;
-    private long BLG_PROC_CNT;
-    private long BLG_ERR_CNT;
-    private String BLG_REMARK;
-    private BigDecimal BLG_BATCH_ID;
-    private int BLG_RETURN_CODE;
     
 }

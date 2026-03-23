@@ -1,6 +1,9 @@
-package PHASE1;
+package com.KSInfo.batch.dto;
+
+import lombok.Data;
 import java.util.Arrays;
 
+@Data
 public class WS_FLAGSDto {
     private WS_EOF_FLAGReturnCode WS_EOF_FLAG = WS_EOF_FLAGReturnCode.NORMAL;
     private WS_VALID_FLAGReturnCode WS_VALID_FLAG = WS_VALID_FLAGReturnCode.NORMAL;

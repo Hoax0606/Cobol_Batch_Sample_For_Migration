@@ -1,6 +1,9 @@
-package PHASE1;
+package com.KSInfo.batch.dto;
+
+import lombok.Data;
 import java.math.BigDecimal;
 
+@Data
 public class DCL_TB_NET_SUMMARYDto {
     private String SUM_SETTLE_DATE;
     private String SUM_INST_CD;

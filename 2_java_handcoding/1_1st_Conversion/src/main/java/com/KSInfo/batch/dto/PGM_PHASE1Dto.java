@@ -1,14 +1,9 @@
-package PHASE1;
+package com.KSInfo.batch.dto;
 
+import lombok.Data;
 import java.math.BigDecimal;
-import java.time.LocalDate; // java.time 패키지 사용    
 
-import copy.ERR_LOG_AREADto;
-import copy.FILE_CONTROL_RECDto;
-import copy.SORT_RECDto;
-import copy.SYS_COMMON_AREADto;
-import copy.TRX_RECORDDto;
-
+@Data
 public class PGM_PHASE1Dto{
     private String IN_REC;
     private String OUT_REC;

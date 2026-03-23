@@ -1,3 +1,8 @@
+package com.KSInfo.batch.dto;
+
+import lombok.Data;
+
+@Data
 public class TRX_RECORDDto {
     private String TRX_HEADER;
     private String FILLER_1;

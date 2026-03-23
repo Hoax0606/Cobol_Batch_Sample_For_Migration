@@ -1,5 +1,9 @@
+package com.KSInfo.batch.dto;
+
+import lombok.Data;
 import java.util.Arrays;
 
+@Data
 public class SYS_COMMON_AREADto {
     private String SYS_JOB_ID = "";
     private String SYS_BIZ_DATE = "";

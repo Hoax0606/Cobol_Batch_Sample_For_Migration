@@ -1,5 +1,9 @@
+package com.KSInfo.batch.dto;
+
+import lombok.Data;
 import java.util.Arrays;
 
+@Data
 public class ERR_LOG_AREADto {
     private String ERR_PGM_ID = "";
     private int ERR_SQLCODE = 0;
