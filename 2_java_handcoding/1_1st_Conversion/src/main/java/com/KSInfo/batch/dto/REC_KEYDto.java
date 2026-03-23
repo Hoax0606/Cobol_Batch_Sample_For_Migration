@@ -3,7 +3,7 @@ package com.KSInfo.batch.dto;
 import lombok.Data;
 
 @Data
-public class REC_KEYDto extends CobolRecord {
+public class REC_KEYDto extends Renames {
 
     // ── 필드 크기 선언 ──────────────────────────────────────────
     private static final int LEN_DATA_TYPE   = 1;
