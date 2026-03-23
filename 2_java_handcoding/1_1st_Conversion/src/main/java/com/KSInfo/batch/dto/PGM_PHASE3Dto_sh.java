@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class PGM_PHASE3Dto{
+public class PGM_PHASE3Dto_sh{
     private WS_DB_CONN wS_DB_CONN;
     private WS_SYS_COMMON_AREA wS_SYS_COMMON_AREA;
     private ERR_LOG_AREA eRR_LOG_AREA;
