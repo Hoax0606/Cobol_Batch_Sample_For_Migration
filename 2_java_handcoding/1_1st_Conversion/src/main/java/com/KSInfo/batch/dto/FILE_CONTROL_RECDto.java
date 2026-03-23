@@ -2,6 +2,7 @@ package com.KSInfo.batch.dto;
 
 import lombok.Data;
 import java.util.Arrays;
+import java.util.Objects;
 
 @Data
 public class FILE_CONTROL_RECDto {
@@ -25,7 +26,7 @@ public class FILE_CONTROL_RECDto {
 
         public static REC_TYPEReturnCode of(String value) {
             return Arrays.stream(values())
-                    .filter(code -> code.value == value)
+                    .filter(code -> Objects.equals(code.value, value))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Unknown return code: " + value));
         }

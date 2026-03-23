@@ -2,6 +2,7 @@ package com.KSInfo.batch.dto;
 
 import lombok.Data;
 import java.util.Arrays;
+import java.util.Objects;
 
 @Data
 public class SYS_COMMON_AREADto {
@@ -26,7 +27,7 @@ public class SYS_COMMON_AREADto {
 
         private static SYS_RET_CODEReturnCode of(int value) {
             return Arrays.stream(values())
-                    .filter(code -> code.value == value)
+                    .filter(code -> Objects.equals(code.value, value))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Unknown return code: " + value));
         }

@@ -34,7 +34,7 @@ public class DCL_TB_BATCH_LOGDto {
 
         public static BLG_ACTIONReturnCode of(String value) {
             return Arrays.stream(values())
-                    .filter(code -> code.value == value)
+                    .filter(code -> Objects.equals(code.value, value))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Unknown return code: " + value));
         }
