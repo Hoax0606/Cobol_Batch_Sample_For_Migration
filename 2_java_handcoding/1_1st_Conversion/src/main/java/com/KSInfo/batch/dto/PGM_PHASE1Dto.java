@@ -1,0 +1,57 @@
+package PHASE1;
+
+import java.math.BigDecimal;
+import java.time.LocalDate; // java.time 패키지 사용    
+
+import copy.ERR_LOG_AREADto;
+import copy.FILE_CONTROL_RECDto;
+import copy.SORT_RECDto;
+import copy.SYS_COMMON_AREADto;
+import copy.TRX_RECORDDto;
+
+public class PGM_PHASE1Dto{
+    private String IN_REC;
+    private String OUT_REC;
+    private String ERR_REC;
+
+    private SORT_RECDto SORT_REC;
+    private SYS_COMMON_AREADto SYS_COMMON_AREA;     //COPY SYS-COM.
+    private ERR_LOG_AREADto ERR_LOG_AREA; //COPY ERR-LOG.
+    private FILE_CONTROL_RECDto FILE_CONTROL_REC; //COPY ERR-LOG.
+// 01  HEADER_REC REDEFINES FILE_CONTROL_REC.
+// 01  TRAILER_REC REDEFINES FILE_CONTROL_REC.
+    private TRX_RECORDDto TRX_RECORD; //COPY TRX-REC.
+
+
+    private DCL_TB_STG_TRXDto DCL_TB_STG_TRX;
+    private DCL_TB_INST_MASTERDto DCL_TB_INST_MASTER;
+    private DCL_TB_NET_SUMMARYDto DCL_TB_NET_SUMMARY;
+    private DCL_TB_TRX_DETAILDto DCL_TB_TRX_DETAIL;
+    private DCL_TB_INST_DAILY_STATDto DCL_TB_INST_DAILY_STAT;
+    private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOG;
+    private WS_FILE_STATUSDto WS_FILE_STATUS;
+    private WS_FLAGSDto WS_FLAGS;
+    private WS_CALC_TOTALSDto WS_CALC_TOTALS;
+    private BigDecimal WS_CALC_AMT = BigDecimal.ZERO;;
+    private WS_WORK_AREASDto_1 WS_WORK_AREAS; // BLOGSVR과 같음
+    private String WS_LOG_BUFFER = "";
+    private int WS_LOG_PTR = 1;
+    private String WS_LOG_TRX_AMT;
+    private int WS_INSPECT_CNT = 0;
+
+    private String WS_PROG_NAME = "PGM_PHASE1";
+    private String WS_PHASE_ID = "PHASE1";
+    private String WS_HEADER_DATE = "";
+    private String WS_TRAILER_COUNT = "";
+    private int WS_COMMIT_LIMIT = 1000;
+    private int WS_REC_LENGTH = 50;
+    private String  WS_ERR_FIELD = "E000";
+    private String  WS_ERR_CODE_SEQ = "E001";
+    private String  WS_ERR_CODE_INST = "E002";
+    private String  WS_ERR_CODE_ACC = "E003";
+    private String  WS_ERR_CODE_TYPE = "E004";
+    private String  WS_ERR_CODE_AMT = "E005";
+    private String  WS_ERR_CODE_CTRL = "E006";
+    private String  WS_ERR_CODE_OVF = "E007";
+
+}
