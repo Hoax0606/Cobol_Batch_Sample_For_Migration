@@ -6,3 +6,4 @@ gixsql.log
 *.exe
 *.COB
 CLAUDE.md
+application.yml
