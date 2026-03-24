@@ -33,13 +33,13 @@
         ORDER BY D.INST_CD  ASC
     ]]></select>
 
-    <select id="select_03" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
-        SELECT INST_CD,
-               INST_NAME,
-               INST_STAT,
-               FEE_RATE
+    <select id="select_03" parameterType="PGM_PHASE3Dto" resultType="DCL_TB_INST_MASTERDto"><![CDATA[
+        SELECT INST_CD   AS INST_MAST_CD,
+               INST_NAME AS INST_MAST_NAME,
+               INST_STAT AS INST_MAST_STAT,
+               FEE_RATE  AS INST_MAST_FEE_RATE
         FROM TB_INST_MASTER
-        WHERE INST_CD = #{INST-MAST-CD}
+        WHERE INST_CD = #{DCL_TB_INST_MASTER.INST_MAST_CD}
     ]]></select>
 
     <insert id="insert_01" parameterType="java.util.Map"><![CDATA[
@@ -75,7 +75,7 @@
         AND TRX_SEQ  = #{STG-TRX-SEQ}
     ]]></update>
 
-    <delete id="delete_01" parameterType="java.util.Map"><![CDATA[
+    <delete id="delete_01" parameterType="PGM_PHASE3Dto"><![CDATA[
         DELETE FROM TB_TRX_DETAIL
          WHERE SETTLE_DATE = #{DTL-SETTLE-DATE}
     ]]></delete>

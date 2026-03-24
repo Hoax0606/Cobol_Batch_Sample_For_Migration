@@ -6,11 +6,11 @@ import java.util.List;
 
 @Data
 public class PGM_PHASE3Dto{
+
     private WS_DB_CONNDto WS_DB_CONN; //!!PHASE2와 동일
     //COPY
     private SYS_COMMON_AREADto SYS_COMMON_AREA;
     private ERR_LOG_AREADto ERR_LOG_AREA;
-
 
     private DCL_TB_STG_TRXDto DCL_TB_STG_TRX; //!! PHASE1과 동일
     private DCL_TB_INST_MASTERDto DCL_TB_INST_MASTER; // !! PHASE1과 동일
@@ -28,4 +28,13 @@ public class PGM_PHASE3Dto{
     private String WS_PHASE_ID = "PHASE3";
     private int WS_COMMIT_INTERVAL = 1000;
     private String WS_PROC_STAT_DONE = "9";
+
+    public PGM_PHASE3Dto() {
+        init();
+    }
+
+    private void init() {
+        this.DCL_TB_INST_MASTER = new DCL_TB_INST_MASTERDto();
+    }
+
 }

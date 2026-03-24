@@ -33,7 +33,9 @@
                CONTINUE
            END-IF.
 
-           EXEC SQL DISCONNECT CURRENT    END-EXEC.
+      *    EXEC SQL DISCONNECT CURRENT    END-EXEC.
+           ctx.close()
+
        MAIN-999.
            GOBACK.
       *----------------------------------------------------------------*
@@ -49,10 +51,12 @@
                DISPLAY '> [BLOGSVR] GIXSQL_DB_CONN NOT SET, SKIP'
                MOVE 8 TO BLG-RETURN-CODE
            ELSE
-               EXEC SQL
-                   CONNECT :WS-USER IDENTIFIED BY :WS-PWD
-                           USING :WS-DATASRC
-               END-EXEC
+      *        EXEC SQL
+      *            CONNECT :WS-USER IDENTIFIED BY :WS-PWD
+      *                    USING :WS-DATASRC
+      *        END-EXEC
+               var ctx = SpringApplication.run(BLOGSVR.class, args);
+               var blogsvrDao = ctx.getBean(BlogsvrDao.class);
 
                IF SQLCODE = 0 THEN
                    CONTINUE
@@ -77,15 +81,38 @@
            MOVE 0                     TO BLG-PROC-CNT.
            MOVE 0                     TO BLG-ERR-CNT.
 
-           EXEC SQL
-               INSERT INTO TB_BATCH_LOG
-                      (PGM_ID,        BIZ_DATE,      START_DT,
-                       END_DT,        STAT,          PROC_CNT,
-                       ERR_CNT,       REMARK)
-               VALUES (:BLG-PGM-ID,   :BLG-BIZ-DATE, :BLG-START-DT,
-                       :BLG-END-DT,   :BLG-STAT,     :BLG-PROC-CNT,
-                       :BLG-ERR-CNT,  :BLG-REMARK)
-           END-EXEC.
+      *    EXEC SQL
+      *        INSERT INTO TB_BATCH_LOG
+      *               (PGM_ID,        BIZ_DATE,      START_DT,
+      *                END_DT,        STAT,          PROC_CNT,
+      *                ERR_CNT,       REMARK)
+      *        VALUES (:BLG-PGM-ID,   :BLG-BIZ-DATE, :BLG-START-DT,
+      *                :BLG-END-DT,   :BLG-STAT,     :BLG-PROC-CNT,
+      *                :BLG-ERR-CNT,  :BLG-REMARK)
+      *    END-EXEC.
+
+           Map<String, Object> param1 = new HashMap<>();
+           param1.put("BLG-PGM-ID", BLG-PGM-ID);
+           param1.put("BLG-BIZ-DATE", BLG-BIZ-DATE);
+           param1.put("BLG-START-DT", BLG-START-DT);
+           param1.put("BLG-END-DT", BLG-END-DT);
+           param1.put("BLG-STAT", BLG-STAT);
+           param1.put("BLG-PROC-CNT", BLG-PROC-CNT);
+           param1.put("BLG-ERR-CNT", BLG-ERR-CNT);
+           param1.put("BLG-REMARK", BLG-REMARK);
+           int rs1 = blogsvrDao.insert_01(param1);
+
+           Map<String, Object> param1 = Map.of(
+               "BLG-PGM-ID",   pgmId,
+               "BLG-BIZ-DATE", bizDate,
+               "BLG-START-DT", startDt,
+               "BLG-END-DT",   "",
+               "BLG-STAT",     "R",
+               "BLG-PROC-CNT", 0,
+               "BLG-ERR-CNT",  0,
+               "BLG-REMARK",   remark
+           );
+           int rs1 = blogsvrDao.insert_01(param1);
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE TO WS-SQLCODE-DISP
@@ -95,13 +122,18 @@
            ELSE
                EXEC SQL COMMIT            END-EXEC
 
-               EXEC SQL
-                   SELECT MAX(BATCH_ID)
-                     INTO :BLG-BATCH-ID
-                     FROM TB_BATCH_LOG
-                    WHERE PGM_ID   = :BLG-PGM-ID
-                      AND BIZ_DATE = :BLG-BIZ-DATE
-               END-EXEC
+      *        EXEC SQL
+      *            SELECT MAX(BATCH_ID)
+      *              INTO :BLG-BATCH-ID
+      *              FROM TB_BATCH_LOG
+      *             WHERE PGM_ID   = :BLG-PGM-ID
+      *               AND BIZ_DATE = :BLG-BIZ-DATE
+      *        END-EXEC
+               Map<String, Object> param2 = new HashMap<>();
+               param2.put("BLG-PGM-ID", BLG-PGM-ID);
+               param2.put("BLG-BIZ-DATE", BLG-BIZ-DATE);
+           
+               Map<String, Object> rs2 = blogsvrDao.select_01(param2);
 
                IF SQLCODE NOT = 0 THEN
                    MOVE SQLCODE TO WS-SQLCODE-DISP
@@ -122,15 +154,25 @@
        BATCHLOG-END-000.
            MOVE FUNCTION CURRENT-DATE(1:14) TO BLG-END-DT.
 
-           EXEC SQL
-               UPDATE TB_BATCH_LOG
-                  SET END_DT   = :BLG-END-DT,
-                      STAT     = :BLG-STAT,
-                      PROC_CNT = :BLG-PROC-CNT,
-                      ERR_CNT  = :BLG-ERR-CNT,
-                      REMARK   = :BLG-REMARK
-                WHERE BATCH_ID = :BLG-BATCH-ID
-           END-EXEC.
+      *    EXEC SQL
+      *        UPDATE TB_BATCH_LOG
+      *           SET END_DT   = :BLG-END-DT,
+      *               STAT     = :BLG-STAT,
+      *               PROC_CNT = :BLG-PROC-CNT,
+      *               ERR_CNT  = :BLG-ERR-CNT,
+      *               REMARK   = :BLG-REMARK
+      *         WHERE BATCH_ID = :BLG-BATCH-ID
+      *    END-EXEC.
+
+           Map<String, Object> param = new HashMap<>();
+           param.put("BLG-END-DT", BLG-END-DT);
+           param.put("BLG-STAT", BLG-STAT);
+           param.put("BLG-PROC-CNT", BLG-PROC-CNT);
+           param.put("BLG-ERR-CNT", BLG-ERR-CNT);
+           param.put("BLG-REMARK", BLG-REMARK);
+           param.put("BLG-BATCH-ID", BLG-BATCH-ID);
+           
+           int rs = blogsvrDao.update_01(param);
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE TO WS-SQLCODE-DISP

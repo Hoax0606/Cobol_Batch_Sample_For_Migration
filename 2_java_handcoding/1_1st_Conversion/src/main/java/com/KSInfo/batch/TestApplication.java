@@ -1,9 +1,12 @@
 package com.KSInfo.batch;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import com.KSInfo.batch.dao.Phase3Dao;
+import com.KSInfo.batch.dto.DCL_TB_INST_MASTERDto;
+import com.KSInfo.batch.dto.PGM_PHASE3Dto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,20 +14,44 @@ import java.util.Map;
 @SpringBootApplication
 public class TestApplication {
 
+    @Autowired
+    private Phase3Dao dao;
+
     public static void main(String[] args) {
         ApplicationContext ctx = SpringApplication.run(TestApplication.class, args);
 
-        Phase3Dao phase3Dao = ctx.getBean(Phase3Dao.class);
+        // Spring이 관리하는 인스턴스를 꺼내서 호출
+        TestApplication app = ctx.getBean(TestApplication.class);
 
-        Map<String, Object> param = new HashMap<>();
-        param.put("DTL-SETTLE-DATE", "20260313");
+        PGM_PHASE3Dto dto = new PGM_PHASE3Dto();
+        app.DELETE_TRX_DETAIL(dto);
+    }
 
-        int result = phase3Dao.delete_01(param);
+    private void DELETE_TRX_DETAIL(PGM_PHASE3Dto dto) {    
 
-        if (result > 0) {
-            System.out.println("DELETE Success: " + result);
-        } else {
-            System.out.println("Nothing to delete");
+        // dto.getDCL_TB_TRX_DETAIL().setDTL_SETTLE_DATE(dto.getSYS_COMMON_AREA().getSYS_BIZ_DATE());
+        dto.getDCL_TB_INST_MASTER().setINST_MAST_CD("B001");
+   
+        try {
+            // dao.select_03(dto);
+            DCL_TB_INST_MASTERDto result = dao.select_03(dto);
+
+            if (result == null) {
+                System.out.println("[WARN] INST NOT FOUND: " + dto.getDCL_TB_INST_MASTER().getINST_MAST_CD());
+            } else {
+                System.out.println("[SUCCESS] INST_CD: "   + result.getINST_MAST_CD());
+                System.out.println("[SUCCESS] INST_NAME: " + result.getINST_MAST_NAME());
+                System.out.println("[SUCCESS] INST_STAT: " + result.getINST_MAST_STAT());
+                System.out.println("[SUCCESS] FEE_RATE: "  + result.getINST_MAST_FEE_RATE());
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            dto.getERR_LOG_AREA().setERR_SQLCODE(Integer.parseInt(e.getMessage()));
+            dto.getERR_LOG_AREA().setERR_DESCRIPTION("TRX_DETAIL DELETE ERROR");
+            // DB_ERROR(dto);
         }
     }
 }
+
+
