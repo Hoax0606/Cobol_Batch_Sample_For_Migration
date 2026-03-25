@@ -7,3 +7,5 @@ gixsql.log
 *.COB
 CLAUDE.md
 application.yml
+/2_java_handcoding/1_1st_Conversion/target
+*.class

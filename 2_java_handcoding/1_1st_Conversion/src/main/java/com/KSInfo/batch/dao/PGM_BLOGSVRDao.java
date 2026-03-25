@@ -4,13 +4,15 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.KSInfo.batch.dto.PGM_BLOGSVRDto;
+
 @Mapper
 public interface PGM_BLOGSVRDao {
 
-    int insert_01(Map<String, Object> param);
+    int insert_01(PGM_BLOGSVRDto param);
 
-    Map<String, Object> select_01(Map<String, Object> param);
+    PGM_BLOGSVRDto select_01(PGM_BLOGSVRDto param);
 
-    int update_01(Map<String, Object> param);
+    int update_01(PGM_BLOGSVRDto param);
 
 }

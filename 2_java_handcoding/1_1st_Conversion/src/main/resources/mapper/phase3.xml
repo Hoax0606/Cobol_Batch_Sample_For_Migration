@@ -3,33 +3,33 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.KSInfo.batch.dao.Phase3Dao">
-    <select id="select_01" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
-        SELECT TRX_DATE,
-               TRX_SEQ,
-               INST_CD,
-               ACC_NO,
-               TRX_TYPE,
-               TRX_AMT,
-               FEE_AMT
+    <select id="select_01" parameterType="PGM_PHASE3Dto" resultType="DCL_TB_STG_TRXDto"><![CDATA[
+        SELECT TRX_DATE AS STG-TRX-DATE,
+               TRX_SEQ AS STG-TRX-SEQ,
+               INST_CD AS STG-INST-CD,
+               ACC_NO AS STG-ACC-NO,
+               TRX_TYPE AS STG-TRX-TYPE,
+               TRX_AMT AS STG-TRX-AMT,
+               FEE_AMT AS STG-FEE-AMT
          FROM TB_STG_TRX
          WHERE PROC_STAT = '0'
          ORDER BY INST_CD ASC, TRX_SEQ ASC
     ]]></select>
 
-    <select id="select_02" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
-        SELECT D.SETTLE_DATE,
-               D.INST_CD,
-               M.INST_NAME,
-               M.FEE_RATE,
-               D.TOT_IN_AMT,
-               D.TOT_OUT_AMT,
-               D.NET_AMT,
-               D.TOT_FEE_AMT,
-               D.TOTAL_CNT
+    <select id="select_02" parameterType="PGM_PHASE3Dto" resultType="DCL_TB_NET_SUMMARYDto"><![CDATA[
+        SELECT D.SETTLE_DATE AS SUM-SETTLE-DATE,
+               D.INST_CD AS SUM-INST-CD,
+               M.INST_NAME AS SUM-INST-NAME,
+               M.FEE_RATE AS SUM-FEE-RATE,
+               D.TOT_IN_AMT AS SUM-TOT-IN,
+               D.TOT_OUT_AMT AS SUM-TOT-OUT,
+               D.NET_AMT AS SUM-NET-AMT,
+               D.TOT_FEE_AMTV AS SUM-TOT-FEE,
+               D.TOTAL_CNT AS SUM-TOT-CNT
         FROM TB_INST_DAILY_STAT D
         JOIN TB_INST_MASTER     M
         ON D.INST_CD     = M.INST_CD
-        WHERE D.SETTLE_DATE = #{IDS-SETTLE-DATE}
+        WHERE D.SETTLE_DATE = #{DCL-TB-INST-DAILY-STAT.IDS-SETTLE-DATE}
         ORDER BY D.INST_CD  ASC
     ]]></select>
 
@@ -42,7 +42,7 @@
         WHERE INST_CD = #{DCL_TB_INST_MASTER.INST_MAST_CD}
     ]]></select>
 
-    <insert id="insert_01" parameterType="java.util.Map"><![CDATA[
+    <insert id="insert_01" parameterType="PGM_PHASE3Dto"><![CDATA[
         INSERT INTO TB_TRX_DETAIL
                (SETTLE_DATE,
                 TRX_SEQ,
@@ -55,38 +55,38 @@
                 FEE_RATE,
                 CALC_FEE_AMT,
                 PROC_STAT)
-        VALUES (#{DTL-SETTLE-DATE}, 
-                #{DTL-TRX-SEQ},    
-                #{DTL-INST-CD},
-                #{DTL-INST-NAME},   
-                #{DTL-ACC-NO},     
-                #{DTL-TRX-TYPE},
-                #{DTL-TRX-AMT},     
-                #{DTL-STG-FEE-AMT},
-                #{DTL-FEE-RATE},
-                #{DTL-CALC-FEE-AMT},
-                #{DTL-PROC-STAT})
+        VALUES (#{DCL-TB-TRX-DETAIL.DTL-SETTLE-DATE}, 
+                #{DCL-TB-TRX-DETAIL.DTL-TRX-SEQ},    
+                #{DCL-TB-TRX-DETAIL.DTL-INST-CD},
+                #{DCL-TB-TRX-DETAIL.DTL-INST-NAME},   
+                #{DCL-TB-TRX-DETAIL.DTL-ACC-NO},     
+                #{DCL-TB-TRX-DETAIL.DTL-TRX-TYPE},
+                #{DCL-TB-TRX-DETAIL.DTL-TRX-AMT},     
+                #{DCL-TB-TRX-DETAIL.DTL-STG-FEE-AMT},
+                #{DCL-TB-TRX-DETAIL.DTL-FEE-RATE},
+                #{DCL-TB-TRX-DETAIL.DTL-CALC-FEE-AMT},
+                #{DCL-TB-TRX-DETAIL.DTL-PROC-STAT})
     ]]></insert>
 
-    <update id="update_01" parameterType="java.util.Map"><![CDATA[
+    <update id="update_01" parameterType="PGM_PHASE3Dto"><![CDATA[
         UPDATE TB_STG_TRX
         SET PROC_STAT = '9'
-        WHERE TRX_DATE = #{STG-TRX-DATE}
-        AND TRX_SEQ  = #{STG-TRX-SEQ}
+        WHERE TRX_DATE = #{DCL-TB-STG-TRX.STG-TRX-DATE}
+        AND TRX_SEQ  = #{DCL-TB-STG-TRX.STG-TRX-SEQ}
     ]]></update>
 
     <delete id="delete_01" parameterType="PGM_PHASE3Dto"><![CDATA[
         DELETE FROM TB_TRX_DETAIL
-         WHERE SETTLE_DATE = #{DTL-SETTLE-DATE}
+         WHERE SETTLE_DATE = #{DCL-TB-TRX-DETAIL.DTL-SETTLE-DATE}
     ]]></delete>
 
 
-    <delete id="delete_02" parameterType="java.util.Map"><![CDATA[
+    <delete id="delete_02" parameterType="PGM_PHASE3Dto"><![CDATA[
         DELETE FROM TB_INST_DAILY_STAT
-         WHERE SETTLE_DATE = #{IDS-SETTLE-DATE}
+         WHERE SETTLE_DATE = #{DCL-TB-INST-DAILY-STAT.IDS-SETTLE-DATE}
     ]]></delete>
 
-    <insert id="insert_02" parameterType="java.util.Map"><![CDATA[
+    <insert id="insert_02" parameterType="PGM_PHASE3Dto"><![CDATA[
         INSERT INTO TB_INST_DAILY_STAT
                (SETTLE_DATE,
                 INST_CD,
@@ -95,21 +95,21 @@
                 NET_AMT,
                 TOT_FEE_AMT,
                 TOTAL_CNT)
-        VALUES (#{IDS-SETTLE-DATE}, 
-                #{IDS-INST-CD},
-                #{IDS-TOT-IN},      
-                #{IDS-TOT-OUT},
-                #{IDS-NET-AMT},     
-                #{IDS-TOT-FEE},
-                #{IDS-TOTAL-CNT})
+        VALUES (#{DCL-TB-INST-DAILY-STAT.IDS-SETTLE-DATE}, 
+                #{DCL-TB-INST-DAILY-STAT.IDS-INST-CD},
+                #{DCL-TB-INST-DAILY-STAT.IDS-TOT-IN},      
+                #{DCL-TB-INST-DAILY-STAT.IDS-TOT-OUT},
+                #{DCL-TB-INST-DAILY-STAT.IDS-NET-AMT},     
+                #{DCL-TB-INST-DAILY-STAT.IDS-TOT-FEE},
+                #{DCL-TB-INST-DAILY-STAT.IDS-TOTAL-CNT})
     ]]></insert>
 
-    <delete id="delete_03" parameterType="java.util.Map"><![CDATA[
+    <delete id="delete_03" parameterType="PGM_PHASE3Dto"><![CDATA[
         DELETE FROM TB_NET_SUMMARY
          WHERE SETTLE_DATE = #{SUM-SETTLE-DATE}
     ]]></delete>
 
-    <insert id="insert_03" parameterType="java.util.Map"><![CDATA[
+    <insert id="insert_03" parameterType="PGM_PHASE3Dto"><![CDATA[
         INSERT INTO TB_NET_SUMMARY
                (SETTLE_DATE,
                 INST_CD,
@@ -120,15 +120,15 @@
                 NET_AMT,
                 TOT_FEE_AMT,
                 TOTAL_CNT)
-        VALUES (#{SUM-SETTLE-DATE}, 
-                #{SUM-INST-CD},
-                #{SUM-INST-NAME},   
-                #{SUM-FEE-RATE},
-                #{SUM-TOT-IN},      
-                #{SUM-TOT-OUT},
-                #{SUM-NET-AMT},     
-                #{SUM-TOT-FEE},
-                #{SUM-TOT-CNT})
+        VALUES (#{DCL-TB-NET-SUMMARY.SUM-SETTLE-DATE}, 
+                #{DCL-TB-NET-SUMMARY.SUM-INST-CD},
+                #{DCL-TB-NET-SUMMARY.SUM-INST-NAME},   
+                #{DCL-TB-NET-SUMMARY.SUM-FEE-RATE},
+                #{DCL-TB-NET-SUMMARY.SUM-TOT-IN},      
+                #{DCL-TB-NET-SUMMARY.SUM-TOT-OUT},
+                #{DCL-TB-NET-SUMMARY.SUM-NET-AMT},     
+                #{DCL-TB-NET-SUMMARY.SUM-TOT-FEE},
+                #{DCL-TB-NET-SUMMARY.SUM-TOT-CNT})
     ]]></insert>
 
 </mapper>
