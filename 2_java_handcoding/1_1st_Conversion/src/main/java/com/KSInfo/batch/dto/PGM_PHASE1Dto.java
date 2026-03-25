@@ -9,13 +9,13 @@ public class PGM_PHASE1Dto{
     private String OUT_REC = "";
     private String ERR_REC = "";
 
-    private SORT_RECDto SORT_RECDto;
-    private SYS_COMMON_AREADto SYS_COMMON_AREADto;     //COPY SYS-COM.
-    private ERR_LOG_AREADto ERR_LOG_AREADto; //COPY ERR-LOG.
-    private FILE_CONTROL_RECDto FILE_CONTROL_RECDto; //COPY ERR-LOG.
+    private SORT_RECDto SORT_RECDto = new SORT_RECDto();
+    private SYS_COMMON_AREADto SYS_COMMON_AREADto = new SYS_COMMON_AREADto();     //COPY SYS-COM.
+    private ERR_LOG_AREADto ERR_LOG_AREADto = new ERR_LOG_AREADto(); //COPY ERR-LOG.
+    private FILE_CONTROL_RECDto FILE_CONTROL_RECDto = new FILE_CONTROL_RECDto(); //COPY ERR-LOG.
 // 01  HEADER_REC REDEFINES FILE_CONTROL_REC.
 // 01  TRAILER_REC REDEFINES FILE_CONTROL_REC.
-    private TRX_RECORDDto TRX_RECORDDto; //COPY TRX-REC.
+    private TRX_RECORDDto TRX_RECORDDto = new TRX_RECORDDto(); //COPY TRX-REC.
 
 
     private DCL_TB_STG_TRXDto DCL_TB_STG_TRXDto = new DCL_TB_STG_TRXDto();
