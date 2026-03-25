@@ -5,7 +5,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface BlogsvrDao {
+public interface PGM_BLOGSVRDao {
 
     int insert_01(Map<String, Object> param);
 

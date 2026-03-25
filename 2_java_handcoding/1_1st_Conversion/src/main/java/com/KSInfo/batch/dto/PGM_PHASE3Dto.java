@@ -9,7 +9,7 @@ public class PGM_PHASE3Dto{
 
     private WS_DB_CONNDto WS_DB_CONNDto; //!!PHASE2와 동일
     //COPY
-    private SYS_COMMON_AREADto SYSYS_COMMON_AREADtoS_COMMON_AREA;
+    private SYS_COMMON_AREADto SYS_COMMON_AREADto;
     private ERR_LOG_AREADto ERR_LOG_AREADto;
 
     private DCL_TB_STG_TRXDto DCL_TB_STG_TRXDto; //!! PHASE1과 동일
@@ -28,13 +28,4 @@ public class PGM_PHASE3Dto{
     private String WS_PHASE_ID = "PHASE3";
     private int WS_COMMIT_INTERVAL = 1000;
     private String WS_PROC_STAT_DONE = "9";
-
-    public PGM_PHASE3Dto() {
-        init();
-    }
-
-    private void init() {
-        this.DCL_TB_INST_MASTER = new DCL_TB_INST_MASTERDto();
-    }
-
 }

@@ -4,7 +4,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class DCL_TB_BATCH_LOG {
+public class DCL_TB_BATCH_LOGDto {
 
     private BLG_ACTION BLG_ACTION;
     private String BLG_PGM_ID = "";

@@ -9,7 +9,7 @@ import com.KSInfo.batch.dto.DCL_TB_INST_MASTERDto;
 import com.KSInfo.batch.dto.PGM_PHASE3Dto;
 
 @Mapper
-public interface Phase3Dao {
+public interface PGM_PHASE3Dao {
 
     List<Map<String, Object>> select_01(Map<String, Object> param);
 

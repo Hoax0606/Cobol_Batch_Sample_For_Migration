@@ -5,7 +5,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface Phase2Dao {
+public interface PGM_PHASE2Dao {
 
     int delete_01(Map<String, Object> param);
 
