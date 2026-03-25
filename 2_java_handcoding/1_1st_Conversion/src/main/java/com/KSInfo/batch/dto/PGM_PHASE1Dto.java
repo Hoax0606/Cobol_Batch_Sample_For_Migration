@@ -18,17 +18,17 @@ public class PGM_PHASE1Dto{
     private TRX_RECORDDto TRX_RECORDDto; //COPY TRX-REC.
 
 
-    private DCL_TB_STG_TRXDto DCL_TB_STG_TRXDto;
-    private DCL_TB_INST_MASTERDto DCL_TB_INST_MASTERDto;
-    private DCL_TB_NET_SUMMARYDto DCL_TB_NET_SUMMARYDto;
-    private DCL_TB_TRX_DETAILDto DCL_TB_TRX_DETAILDto;
-    private DCL_TB_INST_DAILY_STATDto DCL_TB_INST_DAILY_STATDto;
-    private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOGDto;
-    private WS_FILE_STATUSDto WS_FILE_STATUSDto;
-    private WS_FLAGSDto WS_FLAGSDto;
-    private WS_CALC_TOTALSDto WS_CALC_TOTALSDto;
-    private BigDecimal WS_CALC_AMT = BigDecimal.ZERO;;
-    private WS_WORK_AREASDto_1 WS_WORK_AREASDto_1; // BLOGSVR과 같음
+    private DCL_TB_STG_TRXDto DCL_TB_STG_TRXDto = new DCL_TB_STG_TRXDto();
+    private DCL_TB_INST_MASTERDto DCL_TB_INST_MASTERDto = new DCL_TB_INST_MASTERDto();
+    private DCL_TB_NET_SUMMARYDto DCL_TB_NET_SUMMARYDto = new DCL_TB_NET_SUMMARYDto();
+    private DCL_TB_TRX_DETAILDto DCL_TB_TRX_DETAILDto = new DCL_TB_TRX_DETAILDto();
+    private DCL_TB_INST_DAILY_STATDto DCL_TB_INST_DAILY_STATDto = new DCL_TB_INST_DAILY_STATDto();
+    private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOGDto = new DCL_TB_BATCH_LOGDto();
+    private WS_FILE_STATUSDto WS_FILE_STATUSDto = new WS_FILE_STATUSDto();
+    private WS_FLAGSDto WS_FLAGSDto = new WS_FLAGSDto();
+    private WS_CALC_TOTALSDto WS_CALC_TOTALSDto = new WS_CALC_TOTALSDto();
+    private BigDecimal WS_CALC_AMT = BigDecimal.ZERO;
+    private WS_WORK_AREASDto_1 WS_WORK_AREASDto_1 = new WS_WORK_AREASDto_1(); // BLOGSVR과 같음
     private String WS_LOG_BUFFER = "";
     private int WS_LOG_PTR = 1;
     private String WS_LOG_TRX_AMT = "";
