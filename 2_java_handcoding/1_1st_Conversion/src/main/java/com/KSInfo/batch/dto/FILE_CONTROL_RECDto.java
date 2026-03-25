@@ -7,7 +7,7 @@ import java.util.Objects;
 @Data
 public class FILE_CONTROL_RECDto {
     private REC_TYPEReturnCode REC_TYPE;
-    private String REC_CONTENT;
+    private String REC_CONTENT = "";
 
     public enum REC_TYPEReturnCode {
         IS_HEADER("H"),

@@ -5,33 +5,33 @@ import java.math.BigDecimal;
 
 @Data
 public class PGM_PHASE1Dto{
-    private String IN_REC;
-    private String OUT_REC;
-    private String ERR_REC;
+    private String IN_REC = "";
+    private String OUT_REC = "";
+    private String ERR_REC = "";
 
-    private SORT_RECDto SORT_REC;
-    private SYS_COMMON_AREADto SYS_COMMON_AREA;     //COPY SYS-COM.
-    private ERR_LOG_AREADto ERR_LOG_AREA; //COPY ERR-LOG.
-    private FILE_CONTROL_RECDto FILE_CONTROL_REC; //COPY ERR-LOG.
+    private SORT_RECDto SORT_RECDto;
+    private SYS_COMMON_AREADto SYS_COMMON_AREADto;     //COPY SYS-COM.
+    private ERR_LOG_AREADto ERR_LOG_AREADto; //COPY ERR-LOG.
+    private FILE_CONTROL_RECDto FILE_CONTROL_RECDto; //COPY ERR-LOG.
 // 01  HEADER_REC REDEFINES FILE_CONTROL_REC.
 // 01  TRAILER_REC REDEFINES FILE_CONTROL_REC.
-    private TRX_RECORDDto TRX_RECORD; //COPY TRX-REC.
+    private TRX_RECORDDto TRX_RECORDDto; //COPY TRX-REC.
 
 
-    private DCL_TB_STG_TRXDto DCL_TB_STG_TRX;
-    private DCL_TB_INST_MASTERDto DCL_TB_INST_MASTER;
-    private DCL_TB_NET_SUMMARYDto DCL_TB_NET_SUMMARY;
-    private DCL_TB_TRX_DETAILDto DCL_TB_TRX_DETAIL;
-    private DCL_TB_INST_DAILY_STATDto DCL_TB_INST_DAILY_STAT;
-    private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOG;
-    private WS_FILE_STATUSDto WS_FILE_STATUS;
-    private WS_FLAGSDto WS_FLAGS;
-    private WS_CALC_TOTALSDto WS_CALC_TOTALS;
+    private DCL_TB_STG_TRXDto DCL_TB_STG_TRXDto;
+    private DCL_TB_INST_MASTERDto DCL_TB_INST_MASTERDto;
+    private DCL_TB_NET_SUMMARYDto DCL_TB_NET_SUMMARYDto;
+    private DCL_TB_TRX_DETAILDto DCL_TB_TRX_DETAILDto;
+    private DCL_TB_INST_DAILY_STATDto DCL_TB_INST_DAILY_STATDto;
+    private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOGDto;
+    private WS_FILE_STATUSDto WS_FILE_STATUSDto;
+    private WS_FLAGSDto WS_FLAGSDto;
+    private WS_CALC_TOTALSDto WS_CALC_TOTALSDto;
     private BigDecimal WS_CALC_AMT = BigDecimal.ZERO;;
-    private WS_WORK_AREASDto_1 WS_WORK_AREAS; // BLOGSVR과 같음
+    private WS_WORK_AREASDto_1 WS_WORK_AREASDto_1; // BLOGSVR과 같음
     private String WS_LOG_BUFFER = "";
     private int WS_LOG_PTR = 1;
-    private String WS_LOG_TRX_AMT;
+    private String WS_LOG_TRX_AMT = "";
     private int WS_INSPECT_CNT = 0;
 
     private String WS_PROG_NAME = "PGM_PHASE1";
