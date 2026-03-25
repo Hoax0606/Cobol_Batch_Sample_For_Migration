@@ -8,10 +8,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ArrayList;
 import java.math.RoundingMode;
+import java.math.BigDecimal;
 
 import com.KSInfo.batch.dao.PGM_PHASE3Dao;
 import com.KSInfo.batch.dto.PGM_PHASE3Dto;
 import com.KSInfo.batch.PGM_BLOGSVR;
+import com.KSInfo.batch.dto.PGM_BLOGSVRDto;
 import com.KSInfo.batch.dto.DCL_TB_STG_TRXDto;
 
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,9 @@ public class PGM_PHASE3 {
 
     @Autowired
     private PGM_BLOGSVR PGM_BLOGSVR;
+
+    @Autowired
+    private PGM_BLOGSVRDto PGM_BLOGSVRDto;
 
     public void MAIN(PGM_PHASE3Dto dto) {
         INIT(dto);
@@ -149,16 +154,13 @@ public class PGM_PHASE3 {
     private void INSERT_INST_STAT(PGM_PHASE3Dto dto) {
         dto.getDCL_TB_INST_DAILY_STATDto().setIDS_SETTLE_DATE(dto.getSYS_COMMON_AREADto().getSYS_BIZ_DATE());
         dto.getDCL_TB_INST_DAILY_STATDto().setIDS_INST_CD(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(0).getNET_INST_CD());
+        dto.getDCL_TB_INST_DAILY_STATDto().setIDS_TOT_IN(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(0).getNET_TOT_IN());
+        dto.getDCL_TB_INST_DAILY_STATDto().setIDS_TOT_OUT(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(0).getNET_TOT_OUT());
+        dto.getDCL_TB_INST_DAILY_STATDto().setIDS_NET_AMT(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(0).getNET_TOT_IN().add(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(0).getNET_TOT_OUT()));
+        dto.getDCL_TB_INST_DAILY_STATDto().setIDS_TOT_FEE(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(0).getNET_TOT_FEE());
+        dto.getDCL_TB_INST_DAILY_STATDto().setIDS_TOTAL_CNT(BigDecimal.valueOf(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(0).getNET_CNT()));
+
         
-    
-
-
-           MOVE NET-TOT-IN(NET-IDX)   TO IDS-TOT-IN.
-           MOVE NET-TOT-OUT(NET-IDX)  TO IDS-TOT-OUT.
-           COMPUTE IDS-NET-AMT
-               = NET-TOT-IN(NET-IDX) - NET-TOT-OUT(NET-IDX).
-           MOVE NET-TOT-FEE(NET-IDX)  TO IDS-TOT-FEE.
-           MOVE NET-CNT(NET-IDX)      TO IDS-TOTAL-CNT.
 
            EXEC SQL
                INSERT INTO TB_INST_DAILY_STAT
@@ -246,7 +248,7 @@ public class PGM_PHASE3 {
         dto.getDCL_TB_BATCH_LOGDto().setBLG_REMARK("PHASE3 STARTED");
         dto.getDCL_TB_BATCH_LOGDto().setBLG_ACTION("START");
         
-        PGM_BLOGSVR.MAIN(dto.getDCL_TB_BATCH_LOGDto());
+        PGM_BLOGSVR.MAIN(PGM_BLOGSVRDto);
 
         if (dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE() != 0) {
             log.info(" > [WARN] BLOGSVR END FAILED. RC=" + dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE());
@@ -268,7 +270,7 @@ public class PGM_PHASE3 {
             dto.getDCL_TB_BATCH_LOGDto().setBLG_REMARK("PHASE3 COMPLETED SUCCESSFULLY");
         }
 
-        PGM_BLOGSVR.MAIN(dto.getDCL_TB_BATCH_LOGDto());
+        PGM_BLOGSVR.MAIN(PGM_BLOGSVRDto);
 
         if (dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE() != 0) {
             log.info(" > [WARN] BLOGSVR END FAILED. RC=" + dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE());

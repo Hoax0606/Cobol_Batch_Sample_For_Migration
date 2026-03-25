@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 @Data
 public class DCL_TB_BATCH_LOGDto {
 
-    private BLG_ACTION BLG_ACTION;
+    private String BLG_ACTION = "";
     private String BLG_PGM_ID = "";
     private String BLG_BIZ_DATE = "";
     private String BLG_START_DT = "";
@@ -18,33 +18,12 @@ public class DCL_TB_BATCH_LOGDto {
     private BigDecimal BLG_BATCH_ID = BigDecimal.ZERO;
     private int BLG_RETURN_CODE = 0;
 
-    private enum BLG_ACTION {
+    // 88 BLG-START VALUE 'START'
+    public static final String BLG_START = "START";
+    public boolean checkBLG_START() { return BLG_ACTION == BLG_START; }
 
-        BLG_START ("START"),
-        BLG_END   ("END  ");
-
-        private final String value;
-    
-        BLG_ACTION(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public static BLG_ACTION from(String raw) {
-            if (raw == null || raw.isEmpty()) {
-                throw new IllegalArgumentException("Record is null or empty");
-            }
-            String code = raw.substring(0, 5); 
-            for (BLG_ACTION type : values()) {
-                if (type.value.equals(code)) return type;
-                
-                
-            }
-            throw new IllegalArgumentException("Unknown RecordType: [" + code + "]");
-        }
-    }
+    // 88 BATCH-ERROR VALUE 'END'
+    public static final String BLG_END  = "END";
+    public boolean checkBLG_END () { return BLG_ACTION == BLG_END ; }
     
 }

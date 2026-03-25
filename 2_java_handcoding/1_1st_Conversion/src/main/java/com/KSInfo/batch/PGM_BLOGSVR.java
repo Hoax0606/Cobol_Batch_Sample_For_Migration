@@ -2,11 +2,8 @@ package com.KSInfo.batch;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 
 import com.KSInfo.batch.dao.PGM_BLOGSVRDao;
 import com.KSInfo.batch.dto.PGM_BLOGSVRDto;
@@ -37,16 +34,15 @@ public class PGM_BLOGSVR {
             // CONTINUE
         }
 
-        String action = DCL_TB_BATCH_LOGDto.getBLG_ACTION().getValue().trim(); // null이라서 에러
-        if ("START".equals(action)) {
+        if (dto.getDCL_TB_BATCH_LOGDto().getBLG_ACTION().equals(dto.getDCL_TB_BATCH_LOGDto().BLG_START)) {
             BATCHLOG_START(dto);
         } 
-        else if ("END".equals(action)) {
+        else if (dto.getDCL_TB_BATCH_LOGDto().getBLG_ACTION().equals(dto.getDCL_TB_BATCH_LOGDto().BLG_END)) {
             BATCHLOG_END(dto);
         } 
         else {
             // log.warn("> [BLOGSVR] UNKNOWN ACTION: " + action);
-            log.info("> [BLOGSVR] UNKNOWN ACTION: " + action);
+            log.info("> [BLOGSVR] UNKNOWN ACTION: " + dto.getDCL_TB_BATCH_LOGDto().getBLG_ACTION());
             DCL_TB_BATCH_LOGDto.setBLG_RETURN_CODE(8);
         }
 

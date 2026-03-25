@@ -4,33 +4,33 @@
       * ?? ??:
       *
       *  [INIT]
-      *    DB ?? Å® TB_BATCH_LOG INSERT(??)
-      *    Å® CURSOR C-STG-TRX OPEN
+      *    DB ?? ÔøΩ¬® TB_BATCH_LOG INSERT(??)
+      *    ÔøΩ¬® CURSOR C-STG-TRX OPEN
       *
-      *  [PROCESS ÉãÅ[Év]  Å©ÑüÑü CURSOR FETCH (TB_STG_TRX)
-      *    Ñ†
-      *    Ñ•Ñü SELECT TB_INST_MASTER WHERE INST_CD = :STG-INST-CD
-      *    Ñ†         (JOIN: ???ÅE???? ??)
-      *    Ñ†
-      *    Ñ•Ñü COMPUTE ??? ??? (TRX_AMT Å~ FEE_RATE)
-      *    Ñ†
-      *    Ñ•Ñü INSERT TB_TRX_DETAIL
-      *    Ñ†         (STG + INST_MASTER JOIN ?? ?? ??)
-      *    Ñ†
-      *    Ñ•Ñü NETTING-TABLE ???? ?? ??
-      *    Ñ†
-      *    Ñ§Ñü UPDATE TB_STG_TRX SET PROC_STAT='9' (?? ?? ??)
+      *  [PROCESS ∆í‚ÄπÔøΩ[∆ív]  ÔøΩ¬©‚Äû≈∏‚Äû≈∏ CURSOR FETCH (TB_STG_TRX)
+      *    ‚Äû¬†
+      *    ‚Äû¬•‚Äû≈∏ SELECT TB_INST_MASTER WHERE INST_CD = :STG-INST-CD
+      *    ‚Äû¬†         (JOIN: ???ÔøΩE???? ??)
+      *    ‚Äû¬†
+      *    ‚Äû¬•‚Äû≈∏ COMPUTE ??? ??? (TRX_AMT ÔøΩ~ FEE_RATE)
+      *    ‚Äû¬†
+      *    ‚Äû¬•‚Äû≈∏ INSERT TB_TRX_DETAIL
+      *    ‚Äû¬†         (STG + INST_MASTER JOIN ?? ?? ??)
+      *    ‚Äû¬†
+      *    ‚Äû¬•‚Äû≈∏ NETTING-TABLE ???? ?? ??
+      *    ‚Äû¬†
+      *    ‚Äû¬§‚Äû≈∏ UPDATE TB_STG_TRX SET PROC_STAT='9' (?? ?? ??)
       *
       *  [FINALIZE]
-      *    á@ CURSOR CLOSE / ?? COMMIT
-      *    áA DELETE + INSERT Å® TB_INST_DAILY_STAT
+      *    ‚Ä°@ CURSOR CLOSE / ?? COMMIT
+      *    ‚Ä°A DELETE + INSERT ÔøΩ¬® TB_INST_DAILY_STAT
       *       (???? ?? ??? ??? ?? ??? ??)
-      *    áB CURSOR C-DAILY-STAT-JOIN OPEN
+      *    ‚Ä°B CURSOR C-DAILY-STAT-JOIN OPEN
       *       SELECT TB_INST_DAILY_STAT D
       *         JOIN TB_INST_MASTER     M ON D.INST_CD = M.INST_CD
-      *       Å® DELETE + INSERT Å® TB_NET_SUMMARY
-      *          (DAILY_STAT + INST_MASTER MERGE Å® ?? ?? ??)
-      *    áC TB_BATCH_LOG UPDATE (?? ??)
+      *       ÔøΩ¬® DELETE + INSERT ÔøΩ¬® TB_NET_SUMMARY
+      *          (DAILY_STAT + INST_MASTER MERGE ÔøΩ¬® ?? ?? ??)
+      *    ‚Ä°C TB_BATCH_LOG UPDATE (?? ??)
       *
       *================================================================*
       *================================================================*
@@ -149,7 +149,7 @@
 
       *----------------------------------------------------------------*
       * TB_INST_DAILY_STAT (??)
-      * COBOL ???? ?? Å® INSERT
+      * COBOL ???? ?? ÔøΩ¬® INSERT
       * FINALIZE ? TB_INST_MASTER JOIN ??? FROM ??
       *----------------------------------------------------------------*
        01  DCL-TB-INST-DAILY-STAT.
@@ -228,8 +228,8 @@
 
       *----------------------------------------------------------------*
       * CURSOR 1 : C-STG-TRX
-      *   TB_STG_TRX ??? ???? ????ÅE?? ??? FETCH
-      *   Å® INST_CD ? TB_INST_MASTER SELECT(JOIN) ? TB_TRX_DETAIL INSERT
+      *   TB_STG_TRX ??? ???? ????ÔøΩE?? ??? FETCH
+      *   ÔøΩ¬® INST_CD ? TB_INST_MASTER SELECT(JOIN) ? TB_TRX_DETAIL INSERT
       *----------------------------------------------------------------*
            EXEC SQL
                DECLARE C-STG-TRX CURSOR FOR
@@ -245,7 +245,7 @@
       *----------------------------------------------------------------*
       * CURSOR 2 : C-DAILY-STAT-JOIN
       *   TB_INST_DAILY_STAT + TB_INST_MASTER JOIN
-      *   Å® ???ÅE????? ?? ?? TB_NET_SUMMARY INSERT (MERGE)
+      *   ÔøΩ¬® ???ÔøΩE????? ?? ?? TB_NET_SUMMARY INSERT (MERGE)
       *----------------------------------------------------------------*
            EXEC SQL
                DECLARE C-DAILY-STAT-JOIN CURSOR FOR
@@ -353,10 +353,10 @@
       *----------------------------------------------------------------*
       * DATA-PROCESS                  SECTION.
       *----------------------------------------------------------------*
-      * C-STG-TRX FETCH Å® TB_INST_MASTER JOIN SELECT
-      *                 Å® TB_TRX_DETAIL INSERT
-      *                 Å® NETTING-TABLE ??
-      *                 Å® TB_STG_TRX PROC_STAT UPDATE
+      * C-STG-TRX FETCH ÔøΩ¬® TB_INST_MASTER JOIN SELECT
+      *                 ÔøΩ¬® TB_TRX_DETAIL INSERT
+      *                 ÔøΩ¬® NETTING-TABLE ??
+      *                 ÔøΩ¬® TB_STG_TRX PROC_STAT UPDATE
       *----------------------------------------------------------------*
        DATA-PROCESS                   SECTION.
        PROCESS-000.
@@ -387,9 +387,9 @@
       *----------------------------------------------------------------*
       * JOIN-INST-MASTER              SECTION.
       *----------------------------------------------------------------*
-      * TB_INST_MASTER SELECT Å® ???ÅE???? ?? (JOIN ??)
-      * SQLCODE=0  : ??? ??? Å® DETAIL INSERT Å® ?? Å® STG UPDATE
-      * SQLCODE=100: ? ? ?? ?? Å® WARN ?? ? SKIP
+      * TB_INST_MASTER SELECT ÔøΩ¬® ???ÔøΩE???? ?? (JOIN ??)
+      * SQLCODE=0  : ??? ??? ÔøΩ¬® DETAIL INSERT ÔøΩ¬® ?? ÔøΩ¬® STG UPDATE
+      * SQLCODE=100: ? ? ?? ?? ÔøΩ¬® WARN ?? ? SKIP
       *----------------------------------------------------------------*
        JOIN-INST-MASTER               SECTION.
        JOIN-INST-MASTER-000.
@@ -442,9 +442,9 @@
       *----------------------------------------------------------------*
       * TB_STG_TRX(FETCH) + TB_INST_MASTER(JOIN) ???
       * TB_TRX_DETAIL ? ?? ??
-      *   DTL-INST-NAME  Å© INST-MAST-NAME  (INST_MASTER JOIN)
-      *   DTL-FEE-RATE   Å© INST-MAST-FEE-RATE (INST_MASTER JOIN)
-      *   DTL-CALC-FEE-AMT Å© WS-FEE-WORK (???)
+      *   DTL-INST-NAME  ÔøΩ¬© INST-MAST-NAME  (INST_MASTER JOIN)
+      *   DTL-FEE-RATE   ÔøΩ¬© INST-MAST-FEE-RATE (INST_MASTER JOIN)
+      *   DTL-CALC-FEE-AMT ÔøΩ¬© WS-FEE-WORK (???)
       *----------------------------------------------------------------*
        INSERT-TRX-DETAIL              SECTION.
        INSERT-TRX-DETAIL-000.
@@ -514,7 +514,7 @@
                END-IF
            END-PERFORM.
 
-      *    ??? ??: ññîˆ? ?? ??? ??
+      *    ??? ??: ‚Äì‚Äì‚Äù√∂? ?? ??? ??
            IF WS-NOT-FOUND THEN
                ADD 1                  TO WS-NET-MAX-IDX
                SET NET-IDX            TO WS-NET-MAX-IDX
@@ -538,7 +538,7 @@
       *----------------------------------------------------------------*
       * UPDATE-STG-STAT               SECTION.
       *----------------------------------------------------------------*
-      * TB_STG_TRX.PROC_STAT Å® '9' (?? ?? ??)
+      * TB_STG_TRX.PROC_STAT ÔøΩ¬® '9' (?? ?? ??)
       *----------------------------------------------------------------*
        UPDATE-STG-STAT                SECTION.
        UPDATE-STG-STAT-000.
@@ -593,7 +593,7 @@
                CONTINUE
            END-IF.
 
-      * --- á@ TB_INST_DAILY_STAT : ???? ?? Å® DB ?? ---
+      * --- ‚Ä°@ TB_INST_DAILY_STAT : ???? ?? ÔøΩ¬® DB ?? ---
            PERFORM DELETE-INST-STAT-000.
            EXEC SQL COMMIT            END-EXEC.
 
@@ -602,7 +602,7 @@
 
            EXEC SQL COMMIT            END-EXEC.
 
-      * --- áA TB_NET_SUMMARY : DAILY_STAT + INST_MASTER JOIN/MERGE ---
+      * --- ‚Ä°A TB_NET_SUMMARY : DAILY_STAT + INST_MASTER JOIN/MERGE ---
            PERFORM DELETE-NET-SUMMARY-000.
            PERFORM OPEN-JOIN-CURSOR-000.
            PERFORM FETCH-AND-INSERT-SUMMARY-000
@@ -611,7 +611,7 @@
 
            EXEC SQL COMMIT            END-EXEC.
 
-      * --- áB ?? ?? ?? ?? ---
+      * --- ‚Ä°B ?? ?? ?? ?? ---
            PERFORM BATCHLOG-END-000.
            EXEC SQL COMMIT            END-EXEC.
 
@@ -682,7 +682,7 @@
       *----------------------------------------------------------------*
       * INSERT-INST-STAT              SECTION.
       *----------------------------------------------------------------*
-      * NETTING-TABLE(???) Å® TB_INST_DAILY_STAT INSERT
+      * NETTING-TABLE(???) ÔøΩ¬® TB_INST_DAILY_STAT INSERT
       *----------------------------------------------------------------*
        INSERT-INST-STAT               SECTION.
        INSERT-INST-STAT-000.
@@ -774,10 +774,10 @@
       *----------------------------------------------------------------*
       * C-DAILY-STAT-JOIN FETCH
       *   TB_INST_DAILY_STAT D JOIN TB_INST_MASTER M ??? ??
-      *   TB_NET_SUMMARY ? INSERT (JOIN Å® MERGE)
+      *   TB_NET_SUMMARY ? INSERT (JOIN ÔøΩ¬® MERGE)
       *
-      *   SUM-INST-NAME Å© M.INST_NAME   (INST_MASTER JOIN)
-      *   SUM-FEE-RATE  Å© M.FEE_RATE    (INST_MASTER JOIN)
+      *   SUM-INST-NAME ÔøΩ¬© M.INST_NAME   (INST_MASTER JOIN)
+      *   SUM-FEE-RATE  ÔøΩ¬© M.FEE_RATE    (INST_MASTER JOIN)
       *----------------------------------------------------------------*
        FETCH-AND-INSERT-SUMMARY       SECTION.
        FETCH-AND-INSERT-SUMMARY-000.
@@ -808,7 +808,7 @@
       *----------------------------------------------------------------*
       * INSERT-NET-SUMMARY            SECTION.
       *----------------------------------------------------------------*
-      * JOIN ?? (DAILY_STAT + INST_MASTER) Å® TB_NET_SUMMARY INSERT
+      * JOIN ?? (DAILY_STAT + INST_MASTER) ÔøΩ¬® TB_NET_SUMMARY INSERT
       *----------------------------------------------------------------*
        INSERT-NET-SUMMARY             SECTION.
        INSERT-NET-SUMMARY-000.

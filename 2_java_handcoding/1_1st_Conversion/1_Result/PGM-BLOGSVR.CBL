@@ -28,7 +28,7 @@
            END-EVALUATE.
 
            IF BLG-RETURN-CODE = 0 THEN
-               EXEC SQL COMMIT            END-EXEC
+      *        EXEC SQL COMMIT            END-EXEC
            ELSE
                CONTINUE
            END-IF.
