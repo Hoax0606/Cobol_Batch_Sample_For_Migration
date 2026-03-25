@@ -1,37 +1,18 @@
 package com.KSInfo.batch.dto;
 
 import lombok.Data;
-import java.util.Arrays;
-import java.util.Objects;
 
 @Data
 public class SYS_COMMON_AREADto {
     private String SYS_JOB_ID = "";
     private String SYS_BIZ_DATE = "";
-    private SYS_RET_CODEReturnCode SYS_RET_CODE = SYS_RET_CODEReturnCode.NORMAL;
+    private int SYS_RET_CODE = 0;
 
-    private enum SYS_RET_CODEReturnCode {
-        NORMAL(0),
-        BATCH_WARNING(4),
-        BATCH_ERROR(8);
+    // 88 BATCH-WARNING VALUE 4
+    public static final int BATCH_WARNING = 4;
+    public boolean checkBATCH_WARNING() { return SYS_RET_CODE == BATCH_WARNING; }
 
-        private final int value;
-
-        SYS_RET_CODEReturnCode(int value) {
-            this.value = value;
-        }
-
-        private int getValue() {
-            return value;
-        }
-
-        private static SYS_RET_CODEReturnCode of(int value) {
-            return Arrays.stream(values())
-                    .filter(code -> Objects.equals(code.value, value))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown return code: " + value));
-        }
-    }
-    
-    
+    // 88 BATCH-ERROR VALUE 8
+    public static final int BATCH_ERROR = 8;
+    public boolean checkBATCH_ERROR() { return SYS_RET_CODE == BATCH_ERROR; }
 }

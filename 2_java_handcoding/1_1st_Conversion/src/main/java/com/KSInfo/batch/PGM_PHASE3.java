@@ -29,7 +29,7 @@ public class PGM_PHASE3 {
         INIT(dto);
         do {
             DATA_PROCESS(dto);
-        } while(!dto.getWS_FLAGS().WS_EOF());
+        } while(dto.getWS_FLAGSDto().getWS_EOF_FLAG().equals(dto.getWS_FLAGSDto().WS_EOF));
         FINALIZE(dto);
 
         dto.getSYS_COMMON_AREADto().setSYS_RET_CODE(dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE());
@@ -50,8 +50,8 @@ public class PGM_PHASE3 {
         if (dto.getWS_DB_CONNDto().getWS_DATASRC().equals("")) {
             dto.getERR_LOG_AREADto().setERR_DESCRIPTION("GIXSQL_DB_CONN NOT SET");
             SYSTEM_ERROR(dto);
-            // SET BATCH-ERROR TO TRUE
-            dto.getSYS_COMMON_AREADto().setSYS_RET_CODE(dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE());
+            dto.getSYS_COMMON_AREADto().setSYS_RET_CODE(dto.getSYS_COMMON_AREADto().BATCH_ERROR);
+            dto.getDCL_TB_BATCH_LOGDto().setBLG_RETURN_CODE(dto.getSYS_COMMON_AREADto().getSYS_RET_CODE());
             System.exit(dto.getSYS_COMMON_AREADto().getSYS_RET_CODE());
         } else {
             // CONTINUE
@@ -148,8 +148,36 @@ public class PGM_PHASE3 {
 
     private void INSERT_INST_STAT(PGM_PHASE3Dto dto) {
         dto.getDCL_TB_INST_DAILY_STATDto().setIDS_SETTLE_DATE(dto.getSYS_COMMON_AREADto().getSYS_BIZ_DATE());
-        // dto.getDCL_TB_INST_DAILY_STATDto().setIDS_INST_CD(dto.getNETTING_TABLE().);
+        dto.getDCL_TB_INST_DAILY_STATDto().setIDS_INST_CD(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(0).getNET_INST_CD());
+        
     
+
+
+           MOVE NET-TOT-IN(NET-IDX)   TO IDS-TOT-IN.
+           MOVE NET-TOT-OUT(NET-IDX)  TO IDS-TOT-OUT.
+           COMPUTE IDS-NET-AMT
+               = NET-TOT-IN(NET-IDX) - NET-TOT-OUT(NET-IDX).
+           MOVE NET-TOT-FEE(NET-IDX)  TO IDS-TOT-FEE.
+           MOVE NET-CNT(NET-IDX)      TO IDS-TOTAL-CNT.
+
+           EXEC SQL
+               INSERT INTO TB_INST_DAILY_STAT
+                      (SETTLE_DATE, INST_CD,
+                       TOT_IN_AMT,  TOT_OUT_AMT,
+                       NET_AMT,     TOT_FEE_AMT,  TOTAL_CNT)
+               VALUES (:IDS-SETTLE-DATE, :IDS-INST-CD,
+                       :IDS-TOT-IN,      :IDS-TOT-OUT,
+                       :IDS-NET-AMT,     :IDS-TOT-FEE,
+                       :IDS-TOTAL-CNT)
+           END-EXEC.
+
+           IF SQLCODE NOT = 0 THEN
+               MOVE SQLCODE           TO ERR-SQLCODE
+               MOVE 'INST_STAT INSERT ERROR' TO ERR-DESCRIPTION
+               PERFORM DB-ERROR-000
+           ELSE
+               CONTINUE
+           END-IF.
     }
 
     private void DELETE_NET_SUMMARY(PGM_PHASE3Dto dto) {

@@ -1,83 +1,34 @@
 package com.KSInfo.batch.dto;
 
 import lombok.Data;
-import java.util.Arrays;
-import java.util.Objects;
 
 @Data
 public class WS_FLAGSDto {
-    private WS_EOF_FLAGReturnCode WS_EOF_FLAG = WS_EOF_FLAGReturnCode.NORMAL;
-    private WS_VALID_FLAGReturnCode WS_VALID_FLAG = WS_VALID_FLAGReturnCode.NORMAL;
-    private WS_SORT_EOF_FLAGReturnCode WS_SORT_EOF_FLAG = WS_SORT_EOF_FLAGReturnCode.NORMAL;
+    private String WS_EOF_FLAG = "N";
+    private String WS_JOIN_EOF_FLAG = "N";
+    private String WS_FOUND_FLAG = "N";
 
-    public enum WS_EOF_FLAGReturnCode {
-        NORMAL("N"),
-        WS_EOF("Y"),
-        WS_NOT_EOF("N");
+    // 88 WS-EOF VALUE 'Y'
+    public static final String WS_EOF = "Y";
+    public boolean checkWS_EOF() { return WS_EOF_FLAG == WS_EOF; }
 
-        private final String value;
+    // 88 WS-NOT-EOF VALUE 'N'
+    public static final String WS_NOT_EOF = "N";
+    public boolean checkWS_NOT_EOF() { return WS_EOF_FLAG == WS_NOT_EOF; }
 
-        WS_EOF_FLAGReturnCode(String value) {
-            this.value = value;
-        }
+    // 88 WS-JOIN-EOF VALUE 'Y'
+    public static final String WS_JOIN_EOF = "Y";
+    public boolean checkWS_JOIN_EOF() { return WS_EOF_FLAG == WS_JOIN_EOF; }
 
-        public String getValue() {
-            return value;
-        }
+    // 88 WS-JOIN-NOT-EOF VALUE 'N'
+    public static final String WS_JOIN_NOT_EOF = "N";
+    public boolean checkWS_JOIN_NOT_EOF() { return WS_EOF_FLAG == WS_JOIN_NOT_EOF; }
 
-        public static WS_EOF_FLAGReturnCode of(String value) {
-            return Arrays.stream(values())
-                    .filter(code -> Objects.equals(code.value, value))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown return code: " + value));
-        }
-    }   
+    // 88 WS-FOUND VALUE 'Y'
+    public static final String WS_FOUND = "Y";
+    public boolean checkWS_FOUND() { return WS_EOF_FLAG == WS_FOUND; }
 
-    
-    public enum WS_VALID_FLAGReturnCode {
-        NORMAL("Y"),
-        WS_VALID("Y"),
-        WS_INVALID("N");
-
-        private final String value;
-
-        WS_VALID_FLAGReturnCode(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public static WS_VALID_FLAGReturnCode of(String value) {
-            return Arrays.stream(values())
-                    .filter(code -> Objects.equals(code.value, value))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown return code: " + value));
-        }
-    } 
-
-
-        public enum WS_SORT_EOF_FLAGReturnCode {
-        NORMAL("N"),
-        WS_SORT_EOF("Y");
-
-        private final String value;
-
-        WS_SORT_EOF_FLAGReturnCode(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public static WS_SORT_EOF_FLAGReturnCode of(String value) {
-            return Arrays.stream(values())
-                    .filter(code -> Objects.equals(code.value, value))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown return code: " + value));
-        }
-    } 
-    
+    // 88 WS-NOT-FOUND VALUE 'N'
+    public static final String WS_NOT_FOUND = "N";
+    public boolean checkWS_NOT_FOUND() { return WS_EOF_FLAG == WS_NOT_FOUND; }
 }

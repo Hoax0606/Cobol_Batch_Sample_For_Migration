@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
-import com.KSInfo.batch.dao.Phase3Dao;
+import com.KSInfo.batch.dao.PGM_PHASE3Dao;
 import com.KSInfo.batch.dto.DCL_TB_INST_MASTERDto;
 import com.KSInfo.batch.dto.PGM_PHASE3Dto;
 import com.KSInfo.batch.dto.SYS_COMMON_AREADto;
