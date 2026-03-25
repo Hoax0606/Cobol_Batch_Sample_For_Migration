@@ -3,19 +3,19 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.KSInfo.batch.dao.Phase2Dao">
-    <delete id="delete_01" parameterType="java.util.Map"><![CDATA[
+    <delete id="delete_01" parameterType="PGM_PHASE2Dto"><![CDATA[
         DELETE FROM TB_STG_TRX
     ]]></delete>
 
-    <select id="select_01" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
-        SELECT INST_CD,
-           INST_STAT,
-           FEE_RATE
+    <select id="select_01" parameterType="PGM_PHASE2Dto" resultType="DCL_TB_INST_MASTERDto"><![CDATA[
+        SELECT INST_CD AS INST-MAST-CD,
+           INST_STAT AS INST-MAST-STAT,
+           FEE_RATE AS INST-MAST-FEE-RATE
         FROM TB_INST_MASTER
-        WHERE INST_CD = #{instCd}
+        WHERE INST_CD = #{DCL_TB_INST_MASTER.INST-MAST-CD}
     ]]></select>
 
-    <insert id="insert_01" parameterType="java.util.Map"><![CDATA[
+    <insert id="insert_01" parameterType="PGM_PHASE2Dto"><![CDATA[
         INSERT INTO TB_STG_TRX
             (TRX_DATE,    
              TRX_SEQ,     
@@ -25,14 +25,14 @@
              TRX_AMT,
              FEE_AMT,     
              PROC_STAT)
-        VALUES (#{STG-TRX-DATE},
-                #{STG-TRX-SEQ},
-                #{STG-INST-CD},  
-                #{STG-ACC-NO},
-                #{STG-TRX-TYPE}, 
-                #{STG-TRX-AMT},
-                #{STG-FEE-AMT},  
-                #{STG-PROC-STAT})
+        VALUES (#{DCL-TB-STG-TRX.STG-TRX-DATE},
+                #{DCL-TB-STG-TRX.STG-TRX-SEQ},
+                #{DCL-TB-STG-TRX.STG-INST-CD},  
+                #{DCL-TB-STG-TRX.STG-ACC-NO},
+                #{DCL-TB-STG-TRX.STG-TRX-TYPE}, 
+                #{DCL-TB-STG-TRX.STG-TRX-AMT},
+                #{DCL-TB-STG-TRX.STG-FEE-AMT},  
+                #{DCL-TB-STG-TRX.STG-PROC-STAT})
     ]]></insert>
 
 </mapper>

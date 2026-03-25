@@ -3,15 +3,15 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.KSInfo.batch.dao.Phase4Dao">
-    <select id="select_01" parameterType="java.util.Map" resultType="java.util.Map"><![CDATA[
-        SELECT SETTLE_DATE, 
-               INST_CD,
-               INST_NAME,
-               TOT_IN_AMT, 
-               TOT_OUT_AMT, 
-               NET_AMT,
-               TOT_FEE_AMT, 
-               TOTAL_CNT
+    <select id="select_01" parameterType="PGM_PHASE4Dto" resultType="DCL_TB_NET_SUMMARYDto"><![CDATA[
+        SELECT SETTLE_DATE AS SUM-SETTLE-DATE, 
+               INST_CD AS SUM-INST-CD,
+               INST_NAME AS SUM-INST-NAME,
+               TOT_IN_AMT AS SUM-TOT-IN, 
+               TOT_OUT_AMT AS SUM-TOT-OUT, 
+               NET_AMT AS SUM-NET-AMT,
+               TOT_FEE_AMT AS SUM-TOT-FEE, 
+               TOTAL_CNT AS SUM-TOT-CNT
         FROM TB_NET_SUMMARY
         WHERE SETTLE_DATE = #{WS-BIZ-DATE-W}
         ORDER BY INST_CD ASC

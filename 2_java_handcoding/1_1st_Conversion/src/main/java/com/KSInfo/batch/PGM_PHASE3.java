@@ -12,6 +12,7 @@ import java.math.RoundingMode;
 import com.KSInfo.batch.dao.PGM_PHASE3Dao;
 import com.KSInfo.batch.dto.PGM_PHASE3Dto;
 import com.KSInfo.batch.PGM_BLOGSVR;
+import com.KSInfo.batch.dto.DCL_TB_STG_TRXDto;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,10 +92,10 @@ public class PGM_PHASE3 {
     }
 
 
-    private void DATA_PROCESS(PGM_PHASE3Dto dto) {
+    private void DATA_PROCESS(PGM_PHASE3Dto dto) {  
         try {
-            List<PGM_PHASE3Dto> list = dao.select_01(dto);
-            for (PGM_PHASE3Dto row : list) {
+            List<DCL_TB_STG_TRXDto> list = dao.select_01(dto);
+            for (DCL_TB_STG_TRXDto row : list) {
                 dto.getWS_COUNTERSDto_3().setWS_TOTAL_READ(
                     dto.getWS_COUNTERSDto_3().getWS_TOTAL_READ() + 1);
                 JOIN_INST_MASTER(row);
@@ -147,7 +148,7 @@ public class PGM_PHASE3 {
 
     private void INSERT_INST_STAT(PGM_PHASE3Dto dto) {
         dto.getDCL_TB_INST_DAILY_STATDto().setIDS_SETTLE_DATE(dto.getSYS_COMMON_AREADto().getSYS_BIZ_DATE());
-        dto.getDCL_TB_INST_DAILY_STATDto().setIDS_INST_CD(dto.getNETTING_TABLE().);
+        // dto.getDCL_TB_INST_DAILY_STATDto().setIDS_INST_CD(dto.getNETTING_TABLE().);
     
     }
 

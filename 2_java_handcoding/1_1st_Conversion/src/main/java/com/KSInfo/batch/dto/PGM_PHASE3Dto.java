@@ -22,7 +22,7 @@ public class PGM_PHASE3Dto{
     private WS_COUNTERSDto_3 WS_COUNTERSDto_3; // !! PHASE2와 DTO이름만 같음()
     private WS_WORK_AREASDto_2 WS_WORK_AREASDto_2; // !! PHASE2와 동일 
     private String WS_START_DATETIME = "";
-    private List<NET_ENTRYDto> NETTING_TABLE = new ArrayList<>(1000);
+    private NETTING_TABLEDto NETTING_TABLEDto;
 
     private String WS_PROG_NAME = "PGM_PHASE3";
     private String WS_PHASE_ID = "PHASE3";
