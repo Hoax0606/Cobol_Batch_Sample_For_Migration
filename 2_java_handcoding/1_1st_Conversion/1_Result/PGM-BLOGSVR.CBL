@@ -28,13 +28,12 @@
            END-EVALUATE.
 
            IF BLG-RETURN-CODE = 0 THEN
-               EXEC SQL COMMIT            END-EXEC
+      *        EXEC SQL COMMIT            END-EXEC
            ELSE
                CONTINUE
            END-IF.
 
       *    EXEC SQL DISCONNECT CURRENT    END-EXEC.
-           ctx.close()
 
        MAIN-999.
            GOBACK.
@@ -55,9 +54,6 @@
       *            CONNECT :WS-USER IDENTIFIED BY :WS-PWD
       *                    USING :WS-DATASRC
       *        END-EXEC
-               var ctx = SpringApplication.run(BLOGSVR.class, args);
-               var blogsvrDao = ctx.getBean(BlogsvrDao.class);
-
                IF SQLCODE = 0 THEN
                    CONTINUE
                ELSE
@@ -90,29 +86,9 @@
       *                :BLG-END-DT,   :BLG-STAT,     :BLG-PROC-CNT,
       *                :BLG-ERR-CNT,  :BLG-REMARK)
       *    END-EXEC.
-
-           Map<String, Object> param1 = new HashMap<>();
-           param1.put("BLG-PGM-ID", BLG-PGM-ID);
-           param1.put("BLG-BIZ-DATE", BLG-BIZ-DATE);
-           param1.put("BLG-START-DT", BLG-START-DT);
-           param1.put("BLG-END-DT", BLG-END-DT);
-           param1.put("BLG-STAT", BLG-STAT);
-           param1.put("BLG-PROC-CNT", BLG-PROC-CNT);
-           param1.put("BLG-ERR-CNT", BLG-ERR-CNT);
-           param1.put("BLG-REMARK", BLG-REMARK);
-           int rs1 = blogsvrDao.insert_01(param1);
-
-           Map<String, Object> param1 = Map.of(
-               "BLG-PGM-ID",   pgmId,
-               "BLG-BIZ-DATE", bizDate,
-               "BLG-START-DT", startDt,
-               "BLG-END-DT",   "",
-               "BLG-STAT",     "R",
-               "BLG-PROC-CNT", 0,
-               "BLG-ERR-CNT",  0,
-               "BLG-REMARK",   remark
-           );
-           int rs1 = blogsvrDao.insert_01(param1);
+       KS_JAVA_START
+       dao.insert_01(dto);
+       KS_JAVA_END
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE TO WS-SQLCODE-DISP
@@ -120,7 +96,7 @@
                        WS-SQLCODE-DISP
                MOVE 8 TO BLG-RETURN-CODE
            ELSE
-               EXEC SQL COMMIT            END-EXEC
+      *        EXEC SQL COMMIT            END-EXEC
 
       *        EXEC SQL
       *            SELECT MAX(BATCH_ID)
@@ -129,12 +105,11 @@
       *             WHERE PGM_ID   = :BLG-PGM-ID
       *               AND BIZ_DATE = :BLG-BIZ-DATE
       *        END-EXEC
-               Map<String, Object> param2 = new HashMap<>();
-               param2.put("BLG-PGM-ID", BLG-PGM-ID);
-               param2.put("BLG-BIZ-DATE", BLG-BIZ-DATE);
-           
-               Map<String, Object> rs2 = blogsvrDao.select_01(param2);
 
+       KS_JAVA_START
+       dao.select_01(dto);
+       KS_JAVA_END
+           
                IF SQLCODE NOT = 0 THEN
                    MOVE SQLCODE TO WS-SQLCODE-DISP
                    DISPLAY '> [BLOGSVR] BATCH_ID SELECT ERROR. SQLCODE='
@@ -163,17 +138,10 @@
       *               REMARK   = :BLG-REMARK
       *         WHERE BATCH_ID = :BLG-BATCH-ID
       *    END-EXEC.
-
-           Map<String, Object> param = new HashMap<>();
-           param.put("BLG-END-DT", BLG-END-DT);
-           param.put("BLG-STAT", BLG-STAT);
-           param.put("BLG-PROC-CNT", BLG-PROC-CNT);
-           param.put("BLG-ERR-CNT", BLG-ERR-CNT);
-           param.put("BLG-REMARK", BLG-REMARK);
-           param.put("BLG-BATCH-ID", BLG-BATCH-ID);
+       KS_JAVA_START
+       dao.update_01(dto);
+       KS_JAVA_END
            
-           int rs = blogsvrDao.update_01(param);
-
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE TO WS-SQLCODE-DISP
                DISPLAY '> [BLOGSVR] END UPDATE ERROR. SQLCODE='

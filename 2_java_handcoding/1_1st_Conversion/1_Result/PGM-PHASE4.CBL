@@ -54,10 +54,10 @@
            END-IF.
 
       * --- DB ?? ---
-           EXEC SQL
-               CONNECT :WS-USER IDENTIFIED BY :WS-PWD
-                       USING :WS-DATASRC
-           END-EXEC.
+      *    EXEC SQL
+      *        CONNECT :WS-USER IDENTIFIED BY :WS-PWD
+      *                USING :WS-DATASRC
+      *    END-EXEC.
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE            TO ERR-SQLCODE
@@ -74,7 +74,7 @@
            PERFORM BATCHLOG-START-000.
 
       * --- CURSOR OPEN ---
-           EXEC SQL OPEN C-NET-SUMMARY END-EXEC.
+      *    EXEC SQL OPEN C-NET-SUMMARY END-EXEC.
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE               TO ERR-SQLCODE
@@ -98,14 +98,17 @@
       *----------------------------------------------------------------*
        DATA-PROCESS                   SECTION.
        PROCESS-000.
-           EXEC SQL
-               FETCH C-NET-SUMMARY
-                INTO :SUM-SETTLE-DATE, :SUM-INST-CD,
-                     :SUM-INST-NAME,
-                     :SUM-TOT-IN,      :SUM-TOT-OUT,
-                     :SUM-NET-AMT,     :SUM-TOT-FEE,
-                     :SUM-TOT-CNT
-           END-EXEC.
+      *    EXEC SQL
+      *        FETCH C-NET-SUMMARY
+      *         INTO :SUM-SETTLE-DATE, :SUM-INST-CD,
+      *              :SUM-INST-NAME,
+      *              :SUM-TOT-IN,      :SUM-TOT-OUT,
+      *              :SUM-NET-AMT,     :SUM-TOT-FEE,
+      *              :SUM-TOT-CNT
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.select_01(dto);
+       KS_JAVA_END
 
            EVALUATE SQLCODE
                WHEN 0
@@ -201,7 +204,7 @@
        FINALIZE                       SECTION.
        FINALIZE-000.
       * --- CURSOR CLOSE ---
-           EXEC SQL CLOSE C-NET-SUMMARY END-EXEC.
+      *    EXEC SQL CLOSE C-NET-SUMMARY END-EXEC.
 
       * --- Trailer ���R�[�h�o�� ---
            PERFORM WRITE-TRAILER-000.
@@ -211,10 +214,10 @@
 
       * --- ?? ?? ?? ?? ---
            PERFORM BATCHLOG-END-000.
-           EXEC SQL COMMIT            END-EXEC.
+      *    EXEC SQL COMMIT            END-EXEC.
 
       * --- DB ?? ?? ---
-           EXEC SQL DISCONNECT CURRENT END-EXEC.
+      *    EXEC SQL DISCONNECT CURRENT END-EXEC.
 
       * --- ?? ?? DISPLAY ---
            MOVE WS-CALC-AMT           TO ED-CALC-AMT.

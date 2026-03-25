@@ -43,10 +43,10 @@
            END-IF.
 
       * --- DB ?? ---
-           EXEC SQL 
-               CONNECT :WS-USER IDENTIFIED BY :WS-PWD
-                       USING :WS-DATASRC
-           END-EXEC.
+      *    EXEC SQL 
+      *        CONNECT :WS-USER IDENTIFIED BY :WS-PWD
+      *                USING :WS-DATASRC
+      *    END-EXEC.
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE           TO ERR-SQLCODE
@@ -64,10 +64,10 @@
 
       * --- TB_TRX_DETAIL ?? ??? (??? ???) ---
            PERFORM DELETE-TRX-DETAIL-000.
-           EXEC SQL COMMIT            END-EXEC.
+      *    EXEC SQL COMMIT            END-EXEC.
 
       * --- C-STG-TRX ?? ?? ---
-           EXEC SQL OPEN C-STG-TRX    END-EXEC.
+      *    EXEC SQL OPEN C-STG-TRX    END-EXEC.
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE           TO ERR-SQLCODE
@@ -93,13 +93,16 @@
       *----------------------------------------------------------------*
        DATA-PROCESS                   SECTION.
        PROCESS-000.
-           EXEC SQL
-               FETCH C-STG-TRX
-                INTO :STG-TRX-DATE,  :STG-TRX-SEQ,
-                     :STG-INST-CD,   :STG-ACC-NO,
-                     :STG-TRX-TYPE,  :STG-TRX-AMT,
-                     :STG-FEE-AMT
-           END-EXEC.
+      *    EXEC SQL
+      *        FETCH C-STG-TRX
+      *         INTO :STG-TRX-DATE,  :STG-TRX-SEQ,
+      *              :STG-INST-CD,   :STG-ACC-NO,
+      *              :STG-TRX-TYPE,  :STG-TRX-AMT,
+      *              :STG-FEE-AMT
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.select_01(dto);
+       KS_JAVA_END
 
            EVALUATE SQLCODE
                WHEN 0
@@ -128,14 +131,17 @@
        JOIN-INST-MASTER-000.
            MOVE STG-INST-CD           TO INST-MAST-CD.
 
-           EXEC SQL
-               SELECT INST_CD,    INST_NAME,
-                      INST_STAT,  FEE_RATE
-                 INTO :INST-MAST-CD,       :INST-MAST-NAME,
-                      :INST-MAST-STAT,     :INST-MAST-FEE-RATE
-                 FROM TB_INST_MASTER
-                WHERE INST_CD = :INST-MAST-CD
-           END-EXEC.
+      *    EXEC SQL
+      *        SELECT INST_CD,    INST_NAME,
+      *               INST_STAT,  FEE_RATE
+      *          INTO :INST-MAST-CD,       :INST-MAST-NAME,
+      *               :INST-MAST-STAT,     :INST-MAST-FEE-RATE
+      *          FROM TB_INST_MASTER
+      *         WHERE INST_CD = :INST-MAST-CD
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.select_03(dto);
+       KS_JAVA_END
 
            EVALUATE SQLCODE
                WHEN 0
@@ -193,17 +199,20 @@
            MOVE WS-FEE-WORK           TO DTL-CALC-FEE-AMT.
            MOVE WS-PROC-STAT-DONE     TO DTL-PROC-STAT.
 
-           EXEC SQL
-               INSERT INTO TB_TRX_DETAIL
-                      (SETTLE_DATE,   TRX_SEQ,       INST_CD,
-                       INST_NAME,     ACC_NO,        TRX_TYPE,
-                       TRX_AMT,       STG_FEE_AMT,   FEE_RATE,
-                       CALC_FEE_AMT,  PROC_STAT)
-               VALUES (:DTL-SETTLE-DATE, :DTL-TRX-SEQ,    :DTL-INST-CD,
-                       :DTL-INST-NAME,   :DTL-ACC-NO,     :DTL-TRX-TYPE,
-                       :DTL-TRX-AMT,     :DTL-STG-FEE-AMT,:DTL-FEE-RATE,
-                       :DTL-CALC-FEE-AMT,:DTL-PROC-STAT)
-           END-EXEC.
+      *    EXEC SQL
+      *        INSERT INTO TB_TRX_DETAIL
+      *               (SETTLE_DATE,   TRX_SEQ,       INST_CD,
+      *                INST_NAME,     ACC_NO,        TRX_TYPE,
+      *                TRX_AMT,       STG_FEE_AMT,   FEE_RATE,
+      *                CALC_FEE_AMT,  PROC_STAT)
+      *        VALUES (:DTL-SETTLE-DATE, :DTL-TRX-SEQ,    :DTL-INST-CD,
+      *                :DTL-INST-NAME,   :DTL-ACC-NO,     :DTL-TRX-TYPE,
+      *                :DTL-TRX-AMT,     :DTL-STG-FEE-AMT,:DTL-FEE-RATE,
+      *                :DTL-CALC-FEE-AMT,:DTL-PROC-STAT)
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.insert_01(dto);
+       KS_JAVA_END
 
            IF SQLCODE = 0 THEN
                ADD 1                  TO WS-DETAIL-INS-CNT
@@ -275,12 +284,15 @@
       *----------------------------------------------------------------*
        UPDATE-STG-STAT                SECTION.
        UPDATE-STG-STAT-000.
-           EXEC SQL
-               UPDATE TB_STG_TRX
-                  SET PROC_STAT = '9'
-                WHERE TRX_DATE = :STG-TRX-DATE
-                  AND TRX_SEQ  = :STG-TRX-SEQ
-           END-EXEC.
+      *    EXEC SQL
+      *        UPDATE TB_STG_TRX
+      *           SET PROC_STAT = '9'
+      *         WHERE TRX_DATE = :STG-TRX-DATE
+      *           AND TRX_SEQ  = :STG-TRX-SEQ
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.update_01(dto);
+       KS_JAVA_END
 
            IF SQLCODE = 0 THEN
                ADD 1                  TO WS-STAT-UPD-CNT
@@ -302,7 +314,7 @@
            ADD 1                      TO WS-COMMIT-CNT.
 
            IF WS-COMMIT-CNT >= WS-COMMIT-INTERVAL THEN
-               EXEC SQL COMMIT        END-EXEC
+      *        EXEC SQL COMMIT        END-EXEC
                MOVE 0                 TO WS-COMMIT-CNT
                PERFORM PROGRESS-LOG-000
            ELSE
@@ -318,22 +330,22 @@
        FINALIZE                       SECTION.
        FINALIZE-000.
       * --- C-STG-TRX ?? ?? / ?? COMMIT ---
-           EXEC SQL CLOSE C-STG-TRX   END-EXEC.
+      *    EXEC SQL CLOSE C-STG-TRX   END-EXEC.
 
            IF WS-COMMIT-CNT > 0 THEN
-               EXEC SQL COMMIT        END-EXEC
+      *        EXEC SQL COMMIT        END-EXEC
            ELSE
                CONTINUE
            END-IF.
 
       * --- �@ TB_INST_DAILY_STAT : ???? ?? �� DB ?? ---
            PERFORM DELETE-INST-STAT-000.
-           EXEC SQL COMMIT            END-EXEC.
+      *    EXEC SQL COMMIT            END-EXEC.
 
            PERFORM INSERT-INST-STAT-000 VARYING NET-IDX FROM 1 BY 1
                      UNTIL NET-IDX > WS-NET-MAX-IDX.
 
-           EXEC SQL COMMIT            END-EXEC.
+      *    EXEC SQL COMMIT            END-EXEC.
 
       * --- �A TB_NET_SUMMARY : DAILY_STAT + INST_MASTER JOIN/MERGE ---
            PERFORM DELETE-NET-SUMMARY-000.
@@ -342,11 +354,11 @@
                UNTIL WS-JOIN-EOF.
            PERFORM CLOSE-JOIN-CURSOR-000.
 
-           EXEC SQL COMMIT            END-EXEC.
+      *    EXEC SQL COMMIT            END-EXEC.
 
       * --- �B ?? ?? ?? ?? ---
            PERFORM BATCHLOG-END-000.
-           EXEC SQL COMMIT            END-EXEC.
+      *    EXEC SQL COMMIT            END-EXEC.
 
            DISPLAY ' > ========= PGM-PHASE3 RESULT ========='.
            DISPLAY ' > TOTAL READ       : ' WS-TOTAL-READ.
@@ -357,7 +369,7 @@
            DISPLAY ' > ERROR COUNT      : ' WS-ERR-CNT.
            DISPLAY ' > ====================================='.
 
-           EXEC SQL DISCONNECT CURRENT END-EXEC.
+      *    EXEC SQL DISCONNECT CURRENT END-EXEC.
 
        FINALIZE-999.
            EXIT.
@@ -371,10 +383,13 @@
        DELETE-TRX-DETAIL-000.
            MOVE SYS-BIZ-DATE          TO DTL-SETTLE-DATE.
 
-           EXEC SQL
-               DELETE FROM TB_TRX_DETAIL
-                WHERE SETTLE_DATE = :DTL-SETTLE-DATE
-           END-EXEC.
+      *    EXEC SQL
+      *        DELETE FROM TB_TRX_DETAIL
+      *         WHERE SETTLE_DATE = :DTL-SETTLE-DATE
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.delete_01(dto);
+       KS_JAVA_END
 
            IF SQLCODE NOT = 0 AND SQLCODE NOT = 100 THEN
                MOVE SQLCODE           TO ERR-SQLCODE
@@ -396,10 +411,13 @@
        DELETE-INST-STAT-000.
            MOVE SYS-BIZ-DATE          TO IDS-SETTLE-DATE.
 
-           EXEC SQL
-               DELETE FROM TB_INST_DAILY_STAT
-                WHERE SETTLE_DATE = :IDS-SETTLE-DATE
-           END-EXEC.
+      *    EXEC SQL
+      *        DELETE FROM TB_INST_DAILY_STAT
+      *         WHERE SETTLE_DATE = :IDS-SETTLE-DATE
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.delete_02(dto);
+       KS_JAVA_END
 
            IF SQLCODE NOT = 0 AND SQLCODE NOT = 100 THEN
                MOVE SQLCODE           TO ERR-SQLCODE
@@ -428,16 +446,19 @@
            MOVE NET-TOT-FEE(NET-IDX)  TO IDS-TOT-FEE.
            MOVE NET-CNT(NET-IDX)      TO IDS-TOTAL-CNT.
 
-           EXEC SQL
-               INSERT INTO TB_INST_DAILY_STAT
-                      (SETTLE_DATE, INST_CD,
-                       TOT_IN_AMT,  TOT_OUT_AMT,
-                       NET_AMT,     TOT_FEE_AMT,  TOTAL_CNT)
-               VALUES (:IDS-SETTLE-DATE, :IDS-INST-CD,
-                       :IDS-TOT-IN,      :IDS-TOT-OUT,
-                       :IDS-NET-AMT,     :IDS-TOT-FEE,
-                       :IDS-TOTAL-CNT)
-           END-EXEC.
+      *    EXEC SQL
+      *        INSERT INTO TB_INST_DAILY_STAT
+      *               (SETTLE_DATE, INST_CD,
+      *                TOT_IN_AMT,  TOT_OUT_AMT,
+      *                NET_AMT,     TOT_FEE_AMT,  TOTAL_CNT)
+      *        VALUES (:IDS-SETTLE-DATE, :IDS-INST-CD,
+      *                :IDS-TOT-IN,      :IDS-TOT-OUT,
+      *                :IDS-NET-AMT,     :IDS-TOT-FEE,
+      *                :IDS-TOTAL-CNT)
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.insert_02(dto);
+       KS_JAVA_END
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE           TO ERR-SQLCODE
@@ -459,10 +480,13 @@
        DELETE-NET-SUMMARY-000.
            MOVE SYS-BIZ-DATE          TO SUM-SETTLE-DATE.
 
-           EXEC SQL
-               DELETE FROM TB_NET_SUMMARY
-                WHERE SETTLE_DATE = :SUM-SETTLE-DATE
-           END-EXEC.
+      *    EXEC SQL
+      *        DELETE FROM TB_NET_SUMMARY
+      *         WHERE SETTLE_DATE = :SUM-SETTLE-DATE
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.delete_03(dto);
+       KS_JAVA_END
 
            IF SQLCODE NOT = 0 AND SQLCODE NOT = 100 THEN
                MOVE SQLCODE           TO ERR-SQLCODE
@@ -486,7 +510,7 @@
            MOVE SYS-BIZ-DATE          TO IDS-SETTLE-DATE.
            SET WS-JOIN-NOT-EOF        TO TRUE.
 
-           EXEC SQL OPEN C-DAILY-STAT-JOIN END-EXEC.
+      *    EXEC SQL OPEN C-DAILY-STAT-JOIN END-EXEC.
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE           TO ERR-SQLCODE
@@ -514,14 +538,17 @@
       *----------------------------------------------------------------*
        FETCH-AND-INSERT-SUMMARY       SECTION.
        FETCH-AND-INSERT-SUMMARY-000.
-           EXEC SQL
-               FETCH C-DAILY-STAT-JOIN
-                INTO :SUM-SETTLE-DATE, :SUM-INST-CD,
-                     :SUM-INST-NAME,   :SUM-FEE-RATE,
-                     :SUM-TOT-IN,      :SUM-TOT-OUT,
-                     :SUM-NET-AMT,     :SUM-TOT-FEE,
-                     :SUM-TOT-CNT
-           END-EXEC.
+      *    EXEC SQL
+      *        FETCH C-DAILY-STAT-JOIN
+      *         INTO :SUM-SETTLE-DATE, :SUM-INST-CD,
+      *              :SUM-INST-NAME,   :SUM-FEE-RATE,
+      *              :SUM-TOT-IN,      :SUM-TOT-OUT,
+      *              :SUM-NET-AMT,     :SUM-TOT-FEE,
+      *              :SUM-TOT-CNT
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.select_02(dto);
+       KS_JAVA_END
 
            EVALUATE SQLCODE
                WHEN 0
@@ -545,18 +572,21 @@
       *----------------------------------------------------------------*
        INSERT-NET-SUMMARY             SECTION.
        INSERT-NET-SUMMARY-000.
-           EXEC SQL
-               INSERT INTO TB_NET_SUMMARY
-                      (SETTLE_DATE,  INST_CD,
-                       INST_NAME,    FEE_RATE,
-                       TOT_IN_AMT,   TOT_OUT_AMT,
-                       NET_AMT,      TOT_FEE_AMT,  TOTAL_CNT)
-               VALUES (:SUM-SETTLE-DATE, :SUM-INST-CD,
-                       :SUM-INST-NAME,   :SUM-FEE-RATE,
-                       :SUM-TOT-IN,      :SUM-TOT-OUT,
-                       :SUM-NET-AMT,     :SUM-TOT-FEE,
-                       :SUM-TOT-CNT)
-           END-EXEC.
+      *    EXEC SQL
+      *        INSERT INTO TB_NET_SUMMARY
+      *               (SETTLE_DATE,  INST_CD,
+      *                INST_NAME,    FEE_RATE,
+      *                TOT_IN_AMT,   TOT_OUT_AMT,
+      *                NET_AMT,      TOT_FEE_AMT,  TOTAL_CNT)
+      *        VALUES (:SUM-SETTLE-DATE, :SUM-INST-CD,
+      *                :SUM-INST-NAME,   :SUM-FEE-RATE,
+      *                :SUM-TOT-IN,      :SUM-TOT-OUT,
+      *                :SUM-NET-AMT,     :SUM-TOT-FEE,
+      *                :SUM-TOT-CNT)
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.insert_03(dto);
+       KS_JAVA_END
            
            IF SQLCODE = 0 THEN
                ADD 1                  TO WS-SUMMARY-INS-CNT
@@ -574,7 +604,7 @@
       *----------------------------------------------------------------*
        CLOSE-JOIN-CURSOR              SECTION.
        CLOSE-JOIN-CURSOR-000.
-           EXEC SQL CLOSE C-DAILY-STAT-JOIN END-EXEC.
+      *    EXEC SQL CLOSE C-DAILY-STAT-JOIN END-EXEC.
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE           TO ERR-SQLCODE
