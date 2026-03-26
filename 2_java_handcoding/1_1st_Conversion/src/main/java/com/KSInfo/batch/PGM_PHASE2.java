@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PGM_PHASE2 {
     
     private int SQLCODE = 0;
+    private int resultCode = 0;
 
     @Autowired
     private PGM_PHASE2Dao dao;
@@ -38,8 +39,8 @@ public class PGM_PHASE2 {
         } while(dto.getWS_FLAGSDto_2().getWS_EOF_FLAG().equals(dto.getWS_FLAGSDto_2().WS_EOF));
         FINALIZE(dto);
 
-        // MOVE SYS-RET-CODE TO RETURN-CODE
-        // STOP RUN.
+        this.resultCode = dto.getSYS_COMMON_AREADto().getSYS_RET_CODE();
+        System.exit(this.resultCode);
     }
 
     private void INIT(PGM_PHASE2Dto dto) {
@@ -57,8 +58,8 @@ public class PGM_PHASE2 {
             dto.getERR_LOG_AREADto().setERR_DESCRIPTION("GIXSQL_DB_CONN NOT SET");
             SYSTEM_ERROR(dto);
             dto.getSYS_COMMON_AREADto().setSYS_RET_CODE(dto.getSYS_COMMON_AREADto().BATCH_ERROR);
-            // MOVE SYS-RET-CODE TO RETURN-CODE
-            // STOP RUN
+            this.resultCode = dto.getSYS_COMMON_AREADto().getSYS_RET_CODE();
+            System.exit(this.resultCode);
         } else {
             // CONTINUE
         }
@@ -69,8 +70,8 @@ public class PGM_PHASE2 {
             dto.getERR_LOG_AREADto().setERR_DESCRIPTION("INPUT FILE OPEN ERROR");
             SYSTEM_ERROR(dto);
             dto.getSYS_COMMON_AREADto().setSYS_RET_CODE(dto.getSYS_COMMON_AREADto().BATCH_ERROR);
-            // MOVE SYS-RET-CODE TO RETURN-CODE
-            // STOP RUN
+            this.resultCode = dto.getSYS_COMMON_AREADto().getSYS_RET_CODE();
+            System.exit(this.resultCode);
         } else {
             // CONTINUE
         }
@@ -104,6 +105,14 @@ public class PGM_PHASE2 {
         // INSPECT IN-REC
         //        CONVERTING 'abcdefghijklmnopqrstuvwxyz'
         //                TO 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.
+        StringBuilder sb = new StringBuilder(dto.getIN_REC());
+        for (int i = 0; i < sb.length(); i++) {
+            int idx = "abcdefghijklmnopqrstuvwxyz".indexOf(sb.charAt(i));
+            if (idx >= 0) {
+                sb.setCharAt(i, "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(idx));
+            }
+        }
+        dto.setIN_REC(sb.toString());
 
         // MOVE IN-REC TO FILE-CONTROL-REC.
 
@@ -141,7 +150,7 @@ public class PGM_PHASE2 {
             dto.getWS_COUNTERSDto().setWS_INST_SKIP_CNT(dto.getWS_COUNTERSDto().getWS_INST_SKIP_CNT() + 1);
             log.info(" > INST NOT FOUND SKIP: [" + dto.getTRX_RECORDDto().getINST_CD() + "]");
         } else {
-            // MOVE SQLCODE           TO ERR-SQLCODE
+            dto.getERR_LOG_AREADto().setERR_SQLCODE(SQLCODE);
             dto.getERR_LOG_AREADto().setERR_DESCRIPTION("INST MASTER SELECT ERROR");
             DB_ERROR(dto);
         }
@@ -167,12 +176,12 @@ public class PGM_PHASE2 {
                 dto.getWS_COUNTERSDto().setWS_COMMIT_CNT(dto.getWS_COUNTERSDto().getWS_COMMIT_CNT() + 1);
             } else {
                 dto.getWS_COUNTERSDto().setWS_ERR_CNT(dto.getWS_COUNTERSDto().getWS_ERR_CNT() + 1);
-                // MOVE SQLCODE       TO ERR-SQLCODE
+                dto.getERR_LOG_AREADto().setERR_SQLCODE(SQLCODE);
                 dto.getERR_LOG_AREADto().setERR_DESCRIPTION("DB INSERT ERROR");
                 DB_ERROR(dto);
             }
         } catch (Exception e) {
-            
+
         }
 
         if (dto.getWS_COUNTERSDto().getWS_COMMIT_CNT() >= dto.getWS_COMMIT_INTERVAL()) {
