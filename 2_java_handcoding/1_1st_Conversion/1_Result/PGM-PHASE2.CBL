@@ -54,10 +54,10 @@
            END-IF.
 
       * --- DB ?? ---
-           EXEC SQL
-               CONNECT :WS-USER IDENTIFIED BY :WS-PWD
-                       USING :WS-DATASRC
-           END-EXEC.
+      *    EXEC SQL
+      *        CONNECT :WS-USER IDENTIFIED BY :WS-PWD
+      *                USING :WS-DATASRC
+      *    END-EXEC.
 
            IF SQLCODE NOT = 0 THEN
                MOVE SQLCODE            TO ERR-SQLCODE
@@ -74,9 +74,11 @@
            PERFORM BATCHLOG-START-000.
 
       * --- ???? ??? ?? ??? (??? ???) ---
-           EXEC SQL DELETE FROM TB_STG_TRX END-EXEC.
-           EXEC SQL COMMIT END-EXEC.
-
+      *    EXEC SQL DELETE FROM TB_STG_TRX END-EXEC.
+      *    EXEC SQL COMMIT END-EXEC.
+       KS_JAVA_START
+       dao.delete_01(dto);
+       KS_JAVA_END
       * --- ?? ??? ?? ---
            PERFORM READ-IN-FILE-000.
        INIT-999.
@@ -133,14 +135,17 @@
       * --- TB_INST_MASTER ??: ???? ??? ?? ? ???? ?? ---
            MOVE INST-CD               TO INST-MAST-CD.
 
-           EXEC SQL
-               SELECT INST_CD,
-                      INST_STAT,      FEE_RATE
-                 INTO :INST-MAST-CD,
-                      :INST-MAST-STAT,     :INST-MAST-FEE-RATE
-                 FROM TB_INST_MASTER
-                WHERE INST_CD = :INST-MAST-CD
-           END-EXEC.
+      *    EXEC SQL
+      *        SELECT INST_CD,
+      *               INST_STAT,      FEE_RATE
+      *          INTO :INST-MAST-CD,
+      *               :INST-MAST-STAT,     :INST-MAST-FEE-RATE
+      *          FROM TB_INST_MASTER
+      *         WHERE INST_CD = :INST-MAST-CD
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.select_01(dto);
+       KS_JAVA_END
 
            EVALUATE SQLCODE
                WHEN 0
@@ -176,16 +181,19 @@
            MOVE WS-PROC-STAT-INIT     TO STG-PROC-STAT.
 
       * --- ?? INSERT (INIT ???? DELETE? ?? ??? ??) ---
-           EXEC SQL
-               INSERT INTO TB_STG_TRX
-                      (TRX_DATE,    TRX_SEQ,     INST_CD,
-                       ACC_NO,      TRX_TYPE,    TRX_AMT,
-                       FEE_AMT,     PROC_STAT)
-               VALUES (:STG-TRX-DATE, :STG-TRX-SEQ,
-                       :STG-INST-CD,  :STG-ACC-NO,
-                       :STG-TRX-TYPE, :STG-TRX-AMT,
-                       :STG-FEE-AMT,  :STG-PROC-STAT)
-           END-EXEC.
+      *    EXEC SQL
+      *        INSERT INTO TB_STG_TRX
+      *               (TRX_DATE,    TRX_SEQ,     INST_CD,
+      *                ACC_NO,      TRX_TYPE,    TRX_AMT,
+      *                FEE_AMT,     PROC_STAT)
+      *        VALUES (:STG-TRX-DATE, :STG-TRX-SEQ,
+      *                :STG-INST-CD,  :STG-ACC-NO,
+      *                :STG-TRX-TYPE, :STG-TRX-AMT,
+      *                :STG-FEE-AMT,  :STG-PROC-STAT)
+      *    END-EXEC.
+       KS_JAVA_START
+       dao.insert_01(dto);
+       KS_JAVA_END
        
            IF SQLCODE = 0 THEN
                ADD 1              TO WS-INSERT-CNT
@@ -199,7 +207,7 @@
        
       * --- ?? COMMIT ? ?? ?? ?? ---
            IF WS-COMMIT-CNT >= WS-COMMIT-INTERVAL THEN
-               EXEC SQL COMMIT END-EXEC
+      *        EXEC SQL COMMIT END-EXEC
                MOVE 0             TO WS-COMMIT-CNT
                PERFORM PROGRESS-LOG-000
            ELSE
@@ -224,7 +232,7 @@
        FINALIZE-000.
       * --- ?? ???? ?? ---
            IF WS-COMMIT-CNT > 0 THEN
-               EXEC SQL COMMIT END-EXEC
+      *        EXEC SQL COMMIT END-EXEC
            ELSE
                CONTINUE
            END-IF.
@@ -233,9 +241,9 @@
 
       * --- ?? ?? ?? ?? ---
            PERFORM BATCHLOG-END-000.
-           EXEC SQL COMMIT            END-EXEC.
+      *    EXEC SQL COMMIT            END-EXEC.
 
-           EXEC SQL DISCONNECT CURRENT END-EXEC.
+      *    EXEC SQL DISCONNECT CURRENT END-EXEC.
 
            DISPLAY ' > ========= PGM-PHASE2 RESULT ========='.
            DISPLAY ' > TOTAL READ   : ' WS-READ-CNT.
