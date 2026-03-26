@@ -177,25 +177,25 @@ public class PGM_PHASE3 {
     private void AGGREGATE_MEMORY(PGM_PHASE3Dto dto) {
         dto.getWS_FLAGSDto().setWS_FOUND_FLAG(dto.getWS_FLAGSDto().WS_NOT_FOUND);
 
-        for (int NET_IDX = 1; NET_IDX <= dto.getWS_NET_MAX_IDX() 
+        for (int NET_IDX = 1; NET_IDX <= dto.getWS_NET_MAX_IDX()
                 && !dto.getWS_FLAGSDto().getWS_FOUND_FLAG().equals(dto.getWS_FLAGSDto().WS_FOUND); NET_IDX++) {
             dto.getNETTING_TABLEDto().setNET_IDX(NET_IDX);
-            if (dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).getNET_INST_CD() == dto.getDCL_TB_STG_TRXDto()
-                    .getSTG_INST_CD()) {
+            if (dto.getNETTING_TABLEDto().getNET_ENTRYDto()[NET_IDX].getNET_INST_CD().equals(dto.getDCL_TB_STG_TRXDto()
+                    .getSTG_INST_CD())) {
                 dto.getWS_FLAGSDto().setWS_FOUND_FLAG(dto.getWS_FLAGSDto().WS_FOUND);
-                dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
-                        .setNET_CNT(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).getNET_CNT() + 1);
-                dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
-                        .setNET_TOT_FEE(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).getNET_TOT_FEE()
+                dto.getNETTING_TABLEDto().getNET_ENTRYDto()[NET_IDX]
+                        .setNET_CNT(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[NET_IDX].getNET_CNT() + 1);
+                dto.getNETTING_TABLEDto().getNET_ENTRYDto()[NET_IDX]
+                        .setNET_TOT_FEE(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[NET_IDX].getNET_TOT_FEE()
                                 .add(dto.getWS_WORK_AREASDto_3().getWS_FEE_WORK()));
                 if (dto.getDCL_TB_STG_TRXDto().getSTG_TRX_TYPE().equals("I")) {
-                    dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
-                            .setNET_TOT_IN(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
-                            .getNET_TOT_IN().add(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_AMT()));
+                    dto.getNETTING_TABLEDto().getNET_ENTRYDto()[NET_IDX]
+                            .setNET_TOT_IN(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[NET_IDX]
+                                    .getNET_TOT_IN().add(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_AMT()));
                 } else {
-                    dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
-                            .setNET_TOT_OUT(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
-                            .getNET_TOT_OUT().add(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_AMT()));
+                    dto.getNETTING_TABLEDto().getNET_ENTRYDto()[NET_IDX]
+                            .setNET_TOT_OUT(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[NET_IDX]
+                                    .getNET_TOT_OUT().add(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_AMT()));
                 }
             } else {
                 // CONTINUE
@@ -205,18 +205,20 @@ public class PGM_PHASE3 {
         if (dto.getWS_FLAGSDto().getWS_FOUND_FLAG().equals(dto.getWS_FLAGSDto().WS_NOT_FOUND)) {
             dto.setWS_NET_MAX_IDX(dto.getWS_NET_MAX_IDX() + 1);
             dto.getNETTING_TABLEDto().setNET_IDX(dto.getWS_NET_MAX_IDX());
-            dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
+            dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
                     .setNET_INST_CD(dto.getDCL_TB_STG_TRXDto().getSTG_INST_CD());
-            dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).setNET_CNT(1);
-            dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
+            dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()].setNET_CNT(1);
+            dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
                     .setNET_TOT_FEE(dto.getWS_WORK_AREASDto_3().getWS_FEE_WORK());
-            dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).setNET_TOT_IN(BigDecimal.valueOf(0));
-            dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).setNET_TOT_OUT(BigDecimal.valueOf(0));
+            dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
+                    .setNET_TOT_IN(BigDecimal.valueOf(0));
+            dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
+                    .setNET_TOT_OUT(BigDecimal.valueOf(0));
             if (dto.getDCL_TB_STG_TRXDto().getSTG_TRX_TYPE().equals("I")) {
-                dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
+                dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
                         .setNET_TOT_IN(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_AMT());
             } else {
-                dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
+                dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
                         .setNET_TOT_OUT(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_AMT());
             }
         } else {
@@ -237,7 +239,7 @@ public class PGM_PHASE3 {
                 DB_ERROR(dto);
             }
         } catch (Exception e) {
-            
+
         }
     }
 
@@ -257,19 +259,19 @@ public class PGM_PHASE3 {
         // EXEC SQL CLOSE C-STG-TRX END-EXEC.
 
         if (dto.getWS_COUNTERSDto_3().getWS_COMMIT_CNT() > 0) {
-            // EXEC SQL COMMIT        END-EXEC
+            // EXEC SQL COMMIT END-EXEC
         } else {
             // CONTINUE
         }
 
         DELETE_INST_STAT(dto);
-        // EXEC SQL COMMIT            END-EXEC.
+        // EXEC SQL COMMIT END-EXEC.
 
         for (int NET_IDX = 1; NET_IDX <= dto.getWS_NET_MAX_IDX(); NET_IDX++) {
             dto.getNETTING_TABLEDto().setNET_IDX(NET_IDX);
             INSERT_INST_STAT(dto);
         }
-        // EXEC SQL COMMIT            END-EXEC.
+        // EXEC SQL COMMIT END-EXEC.
 
         DELETE_NET_SUMMARY(dto);
         OPEN_JOIN_CURSOR(dto);
@@ -278,10 +280,10 @@ public class PGM_PHASE3 {
         }
         CLOSE_JOIN_CURSOR(dto);
 
-        // EXEC SQL COMMIT            END-EXEC.
+        // EXEC SQL COMMIT END-EXEC.
 
         BATCHLOG_END(dto);
-        // EXEC SQL COMMIT            END-EXEC.
+        // EXEC SQL COMMIT END-EXEC.
 
         log.info(null);
 
@@ -329,24 +331,33 @@ public class PGM_PHASE3 {
                 // CONTINUE
             }
         } catch (Exception e) {
-            
+
         }
     }
 
     private void INSERT_INST_STAT(PGM_PHASE3Dto dto) {
         dto.getDCL_TB_INST_DAILY_STATDto().setIDS_SETTLE_DATE(dto.getSYS_COMMON_AREADto().getSYS_BIZ_DATE());
         dto.getDCL_TB_INST_DAILY_STATDto()
-                .setIDS_INST_CD(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).getNET_INST_CD());
+                .setIDS_INST_CD(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
+                        .getNET_INST_CD());
         dto.getDCL_TB_INST_DAILY_STATDto()
-                .setIDS_TOT_IN(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).getNET_TOT_IN());
+                .setIDS_TOT_IN(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
+                        .getNET_TOT_IN());
         dto.getDCL_TB_INST_DAILY_STATDto()
-                .setIDS_TOT_OUT(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).getNET_TOT_OUT());
-        dto.getDCL_TB_INST_DAILY_STATDto().setIDS_NET_AMT(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX())
-                .getNET_TOT_IN().add(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).getNET_TOT_OUT()));
+                .setIDS_TOT_OUT(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
+                        .getNET_TOT_OUT());
         dto.getDCL_TB_INST_DAILY_STATDto()
-                .setIDS_TOT_FEE(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).getNET_TOT_FEE());
+                .setIDS_NET_AMT(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
+                        .getNET_TOT_IN()
+                        .add(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
+                                .getNET_TOT_OUT()));
         dto.getDCL_TB_INST_DAILY_STATDto()
-                .setIDS_TOTAL_CNT(BigDecimal.valueOf(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(dto.getNETTING_TABLEDto().getNET_IDX()).getNET_CNT()));
+                .setIDS_TOT_FEE(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
+                        .getNET_TOT_FEE());
+        dto.getDCL_TB_INST_DAILY_STATDto()
+                .setIDS_TOTAL_CNT(BigDecimal
+                        .valueOf(dto.getNETTING_TABLEDto().getNET_ENTRYDto()[dto.getNETTING_TABLEDto().getNET_IDX()]
+                                .getNET_CNT()));
 
         try {
             dao.insert_02(dto);
@@ -359,7 +370,7 @@ public class PGM_PHASE3 {
                 // CONTINUE
             }
         } catch (Exception e) {
-            
+
         }
     }
 
@@ -400,14 +411,14 @@ public class PGM_PHASE3 {
     }
 
     private void FETCH_AND_INSERT_SUMMARY(PGM_PHASE3Dto dto) {
-        //    EXEC SQL
-        //        FETCH C-DAILY-STAT-JOIN
-        //         INTO :SUM-SETTLE-DATE, :SUM-INST-CD,
-        //              :SUM-INST-NAME,   :SUM-FEE-RATE,
-        //              :SUM-TOT-IN,      :SUM-TOT-OUT,
-        //              :SUM-NET-AMT,     :SUM-TOT-FEE,
-        //              :SUM-TOT-CNT
-        //    END-EXEC.
+        // EXEC SQL
+        // FETCH C-DAILY-STAT-JOIN
+        // INTO :SUM-SETTLE-DATE, :SUM-INST-CD,
+        // :SUM-INST-NAME, :SUM-FEE-RATE,
+        // :SUM-TOT-IN, :SUM-TOT-OUT,
+        // :SUM-NET-AMT, :SUM-TOT-FEE,
+        // :SUM-TOT-CNT
+        // END-EXEC.
 
         if (SQLCODE == 0) {
             INSERT_NET_SUMMARY(dto);
@@ -424,7 +435,7 @@ public class PGM_PHASE3 {
     private void INSERT_NET_SUMMARY(PGM_PHASE3Dto dto) {
         try {
             dao.insert_03(dto);
-            
+
             if (SQLCODE == 0) {
                 dto.getWS_COUNTERSDto_3().setWS_SUMMARY_INS_CNT(dto.getWS_COUNTERSDto_3().getWS_SUMMARY_INS_CNT() + 1);
             } else {
@@ -441,10 +452,10 @@ public class PGM_PHASE3 {
         // EXEC SQL CLOSE C-DAILY-STAT-JOIN END-EXEC.
 
         if (SQLCODE != 0) {
-        // IF SQLCODE NOT = 0 THEN
-        dto.getWS_COUNTERSDto_3().setWS_ERR_CNT(SQLCODE);
-        dto.getERR_LOG_AREADto().setERR_DESCRIPTION("JOIN CURSOR CLOSE ERROR");
-        DB_ERROR(dto);
+            // IF SQLCODE NOT = 0 THEN
+            dto.getWS_COUNTERSDto_3().setWS_ERR_CNT(SQLCODE);
+            dto.getERR_LOG_AREADto().setERR_DESCRIPTION("JOIN CURSOR CLOSE ERROR");
+            DB_ERROR(dto);
         } else {
             // CONTINUE
         }
