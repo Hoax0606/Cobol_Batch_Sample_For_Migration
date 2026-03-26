@@ -9,7 +9,8 @@ public class PGM_PHASE2Dto{
     //COPY
     private SYS_COMMON_AREADto SYS_COMMON_AREADto = new SYS_COMMON_AREADto();     //COPY SYS-COM.
     private ERR_LOG_AREADto ERR_LOG_AREADto = new ERR_LOG_AREADto(); //COPY ERR-LOG.
-
+    private FILE_CONTROL_RECDto FILE_CONTROL_RECDto = new FILE_CONTROL_RECDto(); //COPY FILE-CTRL.
+    private TRX_RECORDDto TRX_RECORDDto = new TRX_RECORDDto(); //COPY TRX-REC.
     private DCL_TB_STG_TRXDto DCL_TB_STG_TRXDto = new DCL_TB_STG_TRXDto();// PHASE1과 같음 
     private DCL_TB_INST_MASTERDto DCL_TB_INST_MASTERDto = new DCL_TB_INST_MASTERDto();// PHASE1과 같음 
     private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOGDto = new DCL_TB_BATCH_LOGDto();// PHASE1과 같음 
