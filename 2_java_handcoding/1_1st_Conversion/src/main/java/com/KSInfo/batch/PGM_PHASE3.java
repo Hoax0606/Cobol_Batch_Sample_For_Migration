@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 
 import com.KSInfo.batch.dao.PGM_PHASE3Dao;
 import com.KSInfo.batch.dto.PGM_PHASE3Dto;
+import com.KSInfo.batch.dto.WS_WORK_AREASDto;
+import com.KSInfo.batch.dto.WS_WORK_AREASDto_1;
 import com.KSInfo.batch.PGM_BLOGSVR;
 import com.KSInfo.batch.dto.PGM_BLOGSVRDto;
 import com.KSInfo.batch.dto.DCL_TB_STG_TRXDto;
@@ -20,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PGM_PHASE3 {
+
+    private int SQLCODE = 0;
 
     @Autowired
     private PGM_PHASE3Dao dao;
@@ -53,6 +57,7 @@ public class PGM_PHASE3 {
         // ACCEPT WS-PWD          FROM ENVIRONMENT 'GIXSQL_PWD'.
 
         if (dto.getWS_DB_CONNDto().getWS_DATASRC().equals("")) {
+            // MOVE SQLCODE           TO ERR-SQLCODE
             dto.getERR_LOG_AREADto().setERR_DESCRIPTION("GIXSQL_DB_CONN NOT SET");
             SYSTEM_ERROR(dto);
             dto.getSYS_COMMON_AREADto().setSYS_RET_CODE(dto.getSYS_COMMON_AREADto().BATCH_ERROR);
@@ -98,20 +103,14 @@ public class PGM_PHASE3 {
 
 
     private void DATA_PROCESS(PGM_PHASE3Dto dto) {  
-        try {
-            List<DCL_TB_STG_TRXDto> list = dao.select_01(dto);
-            for (DCL_TB_STG_TRXDto row : list) {
-                dto.getWS_COUNTERSDto_3().setWS_TOTAL_READ(
-                    dto.getWS_COUNTERSDto_3().getWS_TOTAL_READ() + 1);
-                JOIN_INST_MASTER(row);
-            }
-        } catch (Exception e) {
-            dto.getERR_LOG_AREADto().setERR_DESCRIPTION("STG CURSOR FETCH ERROR");
-            DB_ERROR(dto);
-            // SET WS-EOF         TO TRUE
-        }
+        // EXEC SQL
+        //     FETCH C-STG-TRX
+        //     INTO :STG-TRX-DATE,  :STG-TRX-SEQ,
+        //         :STG-INST-CD,   :STG-ACC-NO,
+        //         :STG-TRX-TYPE,  :STG-TRX-AMT,
+        //         :STG-FEE-AMT
+        // END-EXEC.
 
-        // TODO: for 문으로 바꿀 수 있는 방법 생각 또는 ASIS와 동일한 방법 고려
         // EVALUATE SQLCODE
         //     WHEN 0
         //         ADD 1              TO WS-TOTAL-READ
@@ -127,14 +126,72 @@ public class PGM_PHASE3 {
     }
 
     private void JOIN_INST_MASTER(PGM_PHASE3Dto dto) {
+        dto.getDCL_TB_STG_TRXDto().setSTG_INST_CD(null);
 
+        dao.select_03(dto);
+
+        if (SQLCODE == 0) {
+            CALC_FEE(dto);
+            INSERT_TRX_DETAIL(dto);
+            AGGREGATE_MEMORY(dto);
+            UPDATE_STG_STAT(dto);
+            CHUNK_COMMIT(dto);
+        } else if (SQLCODE == 100) {
+            dto.getWS_COUNTERSDto_3().setWS_ERR_CNT(dto.getWS_COUNTERSDto_3().getWS_ERR_CNT() + 1);
+            dto.getERR_LOG_AREADto().setERR_DESCRIPTION("INST NOT FOUND IN MASTER");
+            DB_WARN(dto);
+        } else {
+            // MOVE SQLCODE           TO ERR-SQLCODE
+            dto.getERR_LOG_AREADto().setERR_DESCRIPTION("INST MASTER JOIN SELECT ERROR");
+            DB_ERROR(dto);
+        }
     }
 
     private void CALC_FEE(PGM_PHASE3Dto dto) {
-        dto.getWS_WORK_AREASDto_2().setWS_FEE_AMT_COMP(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_AMT().multiply(dto.getDCL_TB_INST_MASTERDto().getINST_MAST_FEE_RATE()).setScale(0,RoundingMode.HALF_UP));
+        dto.getWS_WORK_AREASDto_3().setWS_FEE_WORK(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_AMT().multiply(dto.getDCL_TB_INST_MASTERDto().getINST_MAST_FEE_RATE()).setScale(0,RoundingMode.HALF_UP));
     }
 
+    private void INSERT_TRX_DETAIL(PGM_PHASE3Dto dto) {
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_SETTLE_DATE(dto.getSYS_COMMON_AREADto().getSYS_BIZ_DATE());
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_TRX_SEQ(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_SEQ());
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_INST_CD(dto.getDCL_TB_STG_TRXDto().getSTG_INST_CD());
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_INST_NAME(dto.getDCL_TB_INST_MASTERDto().getINST_MAST_NAME());
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_ACC_NO(dto.getDCL_TB_STG_TRXDto().getSTG_ACC_NO());
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_TRX_TYPE(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_TYPE());
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_TRX_AMT(dto.getDCL_TB_STG_TRXDto().getSTG_TRX_AMT());
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_STG_FEE_AMT(dto.getDCL_TB_STG_TRXDto().getSTG_FEE_AMT());
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_FEE_RATE(dto.getDCL_TB_INST_MASTERDto().getINST_MAST_FEE_RATE());
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_CALC_FEE_AMT(dto.getWS_WORK_AREASDto_3().getWS_FEE_WORK());
+        dto.getDCL_TB_TRX_DETAILDto().setDTL_PROC_STAT(dto.getWS_PROC_STAT_DONE());
 
+        try {
+            dao.insert_01(dto);
+
+            if (SQLCODE == 0) {
+                dto.getWS_COUNTERSDto_3().setWS_DETAIL_INS_CNT(dto.getWS_COUNTERSDto_3().getWS_DETAIL_INS_CNT() + 1);
+            } else {
+                dto.getWS_COUNTERSDto_3().setWS_ERR_CNT(dto.getWS_COUNTERSDto_3().getWS_ERR_CNT() + 1);
+                // MOVE SQLCODE           TO ERR-SQLCODE
+                dto.getERR_LOG_AREADto().setERR_DESCRIPTION("TRX_DETAIL INSERT ERROR");
+                DB_ERROR(dto);
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    private void AGGREGATE_MEMORY(PGM_PHASE3Dto dto) {
+        dto.getWS_FLAGSDto().setWS_FOUND_FLAG(dto.getWS_FLAGSDto().WS_NOT_FOUND);
+
+        // KS_INFO : NET_IDX fix
+        for(int NET_IDX = 0; NET_IDX < dto.getWS_NET_MAX_IDX() || dto.getWS_FLAGSDto().getWS_FOUND_FLAG().equals(dto.getWS_FLAGSDto().WS_FOUND); NET_IDX++) {
+            if(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(NET_IDX).getNET_INST_CD() == dto.getDCL_TB_STG_TRXDto().getSTG_INST_CD()) {
+                dto.getWS_FLAGSDto().getWS_FOUND_FLAG().equals(dto.getWS_FLAGSDto().WS_FOUND);
+                dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(NET_IDX).setNET_CNT(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(NET_IDX).getNET_CNT() + 1);
+                dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(NET_IDX).setNET_TOT_FEE(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(NET_IDX).getNET_TOT_FEE() .add(dto.getWS_WORK_AREASDto_3().getWS_FEE_WORK()));
+            }
+        }
+    }
 
 
     private void DELETE_TRX_DETAIL(PGM_PHASE3Dto dto) {    
@@ -144,8 +201,7 @@ public class PGM_PHASE3 {
             dao.delete_01(dto);
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            // dto.getERR_LOG_AREADto().setERR_SQLCODE(e.getMessage());
+            // MOVE SQLCODE           TO ERR-SQLCODE
             dto.getERR_LOG_AREADto().setERR_DESCRIPTION("TRX_DETAIL DELETE ERROR");
             DB_ERROR(dto);
         }
@@ -160,26 +216,14 @@ public class PGM_PHASE3 {
         dto.getDCL_TB_INST_DAILY_STATDto().setIDS_TOT_FEE(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(0).getNET_TOT_FEE());
         dto.getDCL_TB_INST_DAILY_STATDto().setIDS_TOTAL_CNT(BigDecimal.valueOf(dto.getNETTING_TABLEDto().getNET_ENTRYDto().get(0).getNET_CNT()));
 
-        
-
-           EXEC SQL
-               INSERT INTO TB_INST_DAILY_STAT
-                      (SETTLE_DATE, INST_CD,
-                       TOT_IN_AMT,  TOT_OUT_AMT,
-                       NET_AMT,     TOT_FEE_AMT,  TOTAL_CNT)
-               VALUES (:IDS-SETTLE-DATE, :IDS-INST-CD,
-                       :IDS-TOT-IN,      :IDS-TOT-OUT,
-                       :IDS-NET-AMT,     :IDS-TOT-FEE,
-                       :IDS-TOTAL-CNT)
-           END-EXEC.
-
-           IF SQLCODE NOT = 0 THEN
-               MOVE SQLCODE           TO ERR-SQLCODE
-               MOVE 'INST_STAT INSERT ERROR' TO ERR-DESCRIPTION
-               PERFORM DB-ERROR-000
-           ELSE
-               CONTINUE
-           END-IF.
+        try {
+            dao.insert_02(dto);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            // MOVE SQLCODE           TO ERR-SQLCODE
+            dto.getERR_LOG_AREADto().setERR_DESCRIPTION("INST_STAT INSERT ERROR");
+            DB_ERROR(dto);
+        }
     }
 
     private void DELETE_NET_SUMMARY(PGM_PHASE3Dto dto) {
@@ -220,8 +264,7 @@ public class PGM_PHASE3 {
         try {
             dao.insert_03(dto);
             // SQLCODE = 0
-            dto.getWS_COUNTERSDto_3().setWS_SUMMARY_INS_CNT(
-                dto.getWS_COUNTERSDto_3().getWS_SUMMARY_INS_CNT() + 1);  // ADD 1 TO WS-SUMMARY-INS-CNT
+            dto.getWS_COUNTERSDto_3().setWS_SUMMARY_INS_CNT(dto.getWS_COUNTERSDto_3().getWS_SUMMARY_INS_CNT() + 1);  // ADD 1 TO WS-SUMMARY-INS-CNT
         } catch (Exception e) {
             // MOVE SQLCODE           TO ERR-SQLCODE
             dto.getERR_LOG_AREADto().setERR_DESCRIPTION("NET_SUMMARY INSERT ERROR");

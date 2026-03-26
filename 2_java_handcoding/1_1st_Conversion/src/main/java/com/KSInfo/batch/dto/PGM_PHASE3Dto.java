@@ -20,9 +20,10 @@ public class PGM_PHASE3Dto{
     private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOGDto = new DCL_TB_BATCH_LOGDto(); //!! PHASE1과 동일
     private WS_FLAGSDto WS_FLAGSDto = new WS_FLAGSDto(); //!! PHASE1과 동일
     private WS_COUNTERSDto_3 WS_COUNTERSDto_3 = new WS_COUNTERSDto_3(); // !! PHASE2와 DTO이름만 같음()
-    private WS_WORK_AREASDto_2 WS_WORK_AREASDto_2 = new WS_WORK_AREASDto_2(); // !! PHASE2와 동일 
+    private WS_WORK_AREASDto_3 WS_WORK_AREASDto_3 = new WS_WORK_AREASDto_3();
     private String WS_START_DATETIME = "";
     private NETTING_TABLEDto NETTING_TABLEDto = new NETTING_TABLEDto();
+    private int WS_NET_MAX_IDX = 0;
 
     private String WS_PROG_NAME = "PGM_PHASE3";
     private String WS_PHASE_ID = "PHASE3";
