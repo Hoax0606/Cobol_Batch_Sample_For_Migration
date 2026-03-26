@@ -19,7 +19,7 @@ public class PGM_PHASE4Dto{
     private  DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOGDto = new DCL_TB_BATCH_LOGDto();
     private  WS_DB_CONNDto WS_DB_CONNDto = new WS_DB_CONNDto();
     private  int WS_OUT_STAT =0;
-    private  WS_FLAGSDto_2 WS_FLAGSDto_2 = new WS_FLAGSDto_2();
+    private  WS_FLAGSDto WS_FLAGSDto_2 = new WS_FLAGSDto();
     private  WS_COUNTERSDto_4 WS_COUNTERSDto_4 = new WS_COUNTERSDto_4(); // !!PHASE2 DTO와 이름은 같은데 필드가 다름(private int WS_ERR_CNT = 0;는 같음)
     private  WS_CALC_TOTALSDto_4 WS_CALC_TOTALSDto_4 = new WS_CALC_TOTALSDto_4(); //!!PHASE1과 DTO는 같은데 필드가 다름
     private  WS_WORK_AREASDto_4 WS_WORK_AREASDto_4 = new WS_WORK_AREASDto_4(); //!!PHASE2 DTO와 이름은 같은데 필드가 다름

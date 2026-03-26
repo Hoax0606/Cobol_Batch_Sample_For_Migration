@@ -14,7 +14,7 @@ public class PGM_PHASE2Dto{
     private DCL_TB_INST_MASTERDto DCL_TB_INST_MASTERDto = new DCL_TB_INST_MASTERDto();// PHASE1과 같음 
     private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOGDto = new DCL_TB_BATCH_LOGDto();// PHASE1과 같음 
     private WS_FILE_STATUSDto_2 WS_FILE_STATUSDto_2 = new WS_FILE_STATUSDto_2(); // !!PHASE1 // PHASE1 과 같은 class인데 필드가 2개 없음
-    private WS_FLAGSDto_2 WS_FLAGSDto_2 = new WS_FLAGSDto_2(); // !!PHASE1 // PHASE1 과 같은 class인데 필드가 2개 없음
+    private WS_FLAGSDto WS_FLAGSDto_2 = new WS_FLAGSDto(); // !!PHASE1 // PHASE1 과 같은 class인데 필드가 2개 없음
     private WS_COUNTERSDto WS_COUNTERSDto = new WS_COUNTERSDto();
     private WS_WORK_AREASDto_2 WS_WORK_AREASDto_2 = new WS_WORK_AREASDto_2(); // !! PHASE1 DTO이름은 같은데 안의 변수는 다 다름
     private WS_DB_CONNDto WS_DB_CONNDto = new WS_DB_CONNDto(); // BLOGSVR과 같음 
