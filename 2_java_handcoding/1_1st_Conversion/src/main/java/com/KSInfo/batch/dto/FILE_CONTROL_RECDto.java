@@ -1,36 +1,21 @@
 package com.KSInfo.batch.dto;
 
 import lombok.Data;
-import java.util.Arrays;
-import java.util.Objects;
 
 @Data
 public class FILE_CONTROL_RECDto {
-    private REC_TYPEReturnCode REC_TYPE;
+    private String REC_TYPE = "";
     private String REC_CONTENT = "";
 
-    public enum REC_TYPEReturnCode {
-        IS_HEADER("H"),
-        IS_DATA("D"),
-        IS_TRAILER("T");
+    // 88 IS-HEADER VALUE 'H'
+    public static final String IS_HEADER = "H";
+    public boolean checkIS_HEADER() { return REC_TYPE == IS_HEADER; }
 
-        private final String value;
+    // 88 IS-DATA VALUE 'D'
+    public static final String IS_DATA = "D";
+    public boolean checkIS_DATA() { return REC_TYPE == IS_DATA; }
 
-        REC_TYPEReturnCode(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public static REC_TYPEReturnCode of(String value) {
-            return Arrays.stream(values())
-                    .filter(code -> Objects.equals(code.value, value))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown return code: " + value));
-        }
-    }
-
-    
+    // 88 IS-TRAILER VALUE 'T'
+    public static final String IS_TRAILER = "T";
+    public boolean checkIS_TRAILER() { return REC_TYPE == IS_TRAILER; }
 }
