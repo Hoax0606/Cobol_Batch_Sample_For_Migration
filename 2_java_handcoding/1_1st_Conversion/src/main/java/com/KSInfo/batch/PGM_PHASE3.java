@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PGM_PHASE3 {
 
     private int SQLCODE = 0;
-    // private int NET_IDX;
     private int resultCode;
 
     @Autowired
