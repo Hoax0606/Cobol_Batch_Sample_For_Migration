@@ -25,7 +25,7 @@ public class PGM_PHASE1Dto{
     private DCL_TB_INST_DAILY_STATDto DCL_TB_INST_DAILY_STATDto = new DCL_TB_INST_DAILY_STATDto();
     private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOGDto = new DCL_TB_BATCH_LOGDto();
     private WS_FILE_STATUSDto WS_FILE_STATUSDto = new WS_FILE_STATUSDto();
-    private WS_FLAGSDto WS_FLAGSDto = new WS_FLAGSDto();
+    private WS_FLAGSDto_1 WS_FLAGSDto_1 = new WS_FLAGSDto_1();
     private WS_CALC_TOTALSDto WS_CALC_TOTALSDto = new WS_CALC_TOTALSDto();
     private BigDecimal WS_CALC_AMT = BigDecimal.ZERO;
     private WS_WORK_AREASDto_1 WS_WORK_AREASDto_1 = new WS_WORK_AREASDto_1(); // BLOGSVR과 같음
