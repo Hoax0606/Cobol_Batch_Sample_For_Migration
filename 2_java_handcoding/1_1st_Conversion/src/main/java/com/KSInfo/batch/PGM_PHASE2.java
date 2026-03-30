@@ -5,15 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.ArrayList;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import com.KSInfo.batch.dao.PGM_PHASE2Dao;
 import com.KSInfo.batch.dto.PGM_PHASE2Dto;
 import com.KSInfo.batch.dto.PGM_BLOGSVRDto;
-import com.KSInfo.batch.PGM_BLOGSVR;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,9 +1,10 @@
 package com.KSInfo.batch;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.KSInfo.batch.dao.PGM_BLOGSVRDao;
 import com.KSInfo.batch.dto.PGM_BLOGSVRDto;
@@ -12,12 +13,13 @@ import com.KSInfo.batch.dto.DCL_TB_BATCH_LOGDto;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 public class PGM_BLOGSVR {
     @Autowired
     private PGM_BLOGSVRDao dao;
     //!!1.PROCEDURE                      DIVISION USING DCL-TB-BATCH-LOG.
-    @Autowired
-    private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOGDto;
+    
+    private DCL_TB_BATCH_LOGDto DCL_TB_BATCH_LOGDto = new DCL_TB_BATCH_LOGDto();
     
 
     public void MAIN(PGM_BLOGSVRDto dto){

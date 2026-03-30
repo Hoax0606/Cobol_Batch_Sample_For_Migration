@@ -1,8 +1,6 @@
 package com.KSInfo.batch.dto;
 
 import lombok.Data;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 public class PGM_PHASE3Dto{
@@ -29,4 +27,7 @@ public class PGM_PHASE3Dto{
     private String WS_PHASE_ID = "PHASE3";
     private int WS_COMMIT_INTERVAL = 1000;
     private String WS_PROC_STAT_DONE = "9";
+
+    private int fetchLimit = 1000;
+    private int fetchOffset = 0;
 }

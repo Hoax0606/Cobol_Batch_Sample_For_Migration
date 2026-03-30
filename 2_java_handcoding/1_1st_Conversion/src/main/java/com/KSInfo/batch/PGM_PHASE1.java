@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Value;
 import com.KSInfo.batch.dto.PGM_PHASE1Dto;
 
 import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PGM_PHASE1 {
     //!! 삭제?
     // @Autowired

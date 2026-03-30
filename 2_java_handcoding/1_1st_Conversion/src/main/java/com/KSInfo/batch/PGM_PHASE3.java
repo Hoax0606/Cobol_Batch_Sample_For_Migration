@@ -1,19 +1,25 @@
 package com.KSInfo.batch;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.math.RoundingMode;
 import java.math.BigDecimal;
+import java.util.List;
 
 import com.KSInfo.batch.dao.PGM_PHASE3Dao;
 import com.KSInfo.batch.dto.PGM_PHASE3Dto;
 import com.KSInfo.batch.dto.PGM_BLOGSVRDto;
+import com.KSInfo.batch.dto.DCL_TB_STG_TRXDto;
+import com.KSInfo.batch.dto.DCL_TB_NET_SUMMARYDto;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 public class PGM_PHASE3 {
 
     private int SQLCODE = 0;
@@ -25,11 +31,11 @@ public class PGM_PHASE3 {
     @Autowired
     private PGM_BLOGSVR PGM_BLOGSVR;
 
-    @Autowired
-    private PGM_BLOGSVRDto PGM_BLOGSVRDto;
+    private PGM_BLOGSVRDto PGM_BLOGSVRDto = new PGM_BLOGSVRDto();
 
     public void MAIN(PGM_PHASE3Dto dto) {
         INIT(dto);
+        dto.setFetchOffset(0);
         while (!dto.getWS_FLAGSDto().getWS_EOF_FLAG().equals(dto.getWS_FLAGSDto().WS_EOF)) {
             DATA_PROCESS(dto);
         }
@@ -96,29 +102,39 @@ public class PGM_PHASE3 {
     }
 
     private void DATA_PROCESS(PGM_PHASE3Dto dto) {
-        // EXEC SQL
-        // FETCH C-STG-TRX
-        // INTO :STG-TRX-DATE, :STG-TRX-SEQ,
-        // :STG-INST-CD, :STG-ACC-NO,
-        // :STG-TRX-TYPE, :STG-TRX-AMT,
-        // :STG-FEE-AMT
-        // END-EXEC.
 
-        if (SQLCODE == 0) {
-            dto.getWS_COUNTERSDto_3().setWS_TOTAL_READ(dto.getWS_COUNTERSDto_3().getWS_TOTAL_READ() + 1);
-            JOIN_INST_MASTER(dto);
-        } else if (SQLCODE == 100) {
-            dto.getWS_FLAGSDto().setWS_EOF_FLAG(dto.getWS_FLAGSDto().WS_EOF);
-        } else {
-            dto.getWS_COUNTERSDto_3().setWS_ERR_CNT(SQLCODE);
-            dto.getERR_LOG_AREADto().setERR_DESCRIPTION("STG CURSOR FETCH ERROR");
-            DB_ERROR(dto);
+        List<DCL_TB_STG_TRXDto> list = dao.select_01(dto, dto.getFetchLimit(), dto.getFetchOffset());
+
+        for (DCL_TB_STG_TRXDto row : list) {
+            dto.getDCL_TB_STG_TRXDto().setSTG_TRX_DATE(row.getSTG_TRX_DATE());
+            dto.getDCL_TB_STG_TRXDto().setSTG_TRX_SEQ(row.getSTG_TRX_SEQ());
+            dto.getDCL_TB_STG_TRXDto().setSTG_INST_CD(row.getSTG_INST_CD());
+            dto.getDCL_TB_STG_TRXDto().setSTG_ACC_NO(row.getSTG_ACC_NO());
+            dto.getDCL_TB_STG_TRXDto().setSTG_TRX_TYPE(row.getSTG_TRX_TYPE());
+            dto.getDCL_TB_STG_TRXDto().setSTG_TRX_AMT(row.getSTG_TRX_AMT());
+            dto.getDCL_TB_STG_TRXDto().setSTG_FEE_AMT(row.getSTG_FEE_AMT());
+
+            if (SQLCODE == 0) {
+                dto.getWS_COUNTERSDto_3().setWS_TOTAL_READ(dto.getWS_COUNTERSDto_3().getWS_TOTAL_READ() + 1);
+                JOIN_INST_MASTER(dto);
+            } else if (SQLCODE == 100) {
+                dto.getWS_FLAGSDto().setWS_EOF_FLAG(dto.getWS_FLAGSDto().WS_EOF);
+            } else {
+                dto.getWS_COUNTERSDto_3().setWS_ERR_CNT(SQLCODE);
+                dto.getERR_LOG_AREADto().setERR_DESCRIPTION("STG CURSOR FETCH ERROR");
+                DB_ERROR(dto);
+                dto.getWS_FLAGSDto().setWS_EOF_FLAG(dto.getWS_FLAGSDto().WS_EOF);
+            }
+        }
+
+        dto.setFetchOffset(dto.getFetchOffset() + dto.getFetchLimit());
+        if (list.size() < dto.getFetchLimit()) {
             dto.getWS_FLAGSDto().setWS_EOF_FLAG(dto.getWS_FLAGSDto().WS_EOF);
         }
     }
 
     private void JOIN_INST_MASTER(PGM_PHASE3Dto dto) {
-        dto.getDCL_TB_STG_TRXDto().setSTG_INST_CD(null);
+        dto.getDCL_TB_INST_MASTERDto().setINST_MAST_CD(dto.getDCL_TB_STG_TRXDto().getSTG_INST_CD());
 
         dao.select_03(dto);
 
@@ -274,6 +290,7 @@ public class PGM_PHASE3 {
 
         DELETE_NET_SUMMARY(dto);
         OPEN_JOIN_CURSOR(dto);
+        dto.setFetchOffset(0);
         while (!dto.getWS_FLAGSDto().getWS_JOIN_EOF_FLAG().equals(dto.getWS_FLAGSDto().WS_JOIN_EOF)) {
             FETCH_AND_INSERT_SUMMARY(dto);
         }
@@ -410,23 +427,35 @@ public class PGM_PHASE3 {
     }
 
     private void FETCH_AND_INSERT_SUMMARY(PGM_PHASE3Dto dto) {
-        // EXEC SQL
-        // FETCH C-DAILY-STAT-JOIN
-        // INTO :SUM-SETTLE-DATE, :SUM-INST-CD,
-        // :SUM-INST-NAME, :SUM-FEE-RATE,
-        // :SUM-TOT-IN, :SUM-TOT-OUT,
-        // :SUM-NET-AMT, :SUM-TOT-FEE,
-        // :SUM-TOT-CNT
-        // END-EXEC.
 
-        if (SQLCODE == 0) {
-            INSERT_NET_SUMMARY(dto);
-        } else if (SQLCODE == 100) {
-            dto.getWS_FLAGSDto().setWS_JOIN_EOF_FLAG(dto.getWS_FLAGSDto().WS_JOIN_EOF);
-        } else {
-            dto.getWS_COUNTERSDto_3().setWS_ERR_CNT(SQLCODE);
-            dto.getERR_LOG_AREADto().setERR_DESCRIPTION("JOIN CURSOR FETCH ERROR");
-            DB_ERROR(dto);
+        List<DCL_TB_NET_SUMMARYDto> list = dao.select_02(dto, dto.getFetchLimit(), dto.getFetchOffset());
+
+        for (DCL_TB_NET_SUMMARYDto row : list) {
+            // FETCH INTO 대응: row → dto 세팅
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_SETTLE_DATE(row.getSUM_SETTLE_DATE());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_INST_CD(row.getSUM_INST_CD());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_INST_NAME(row.getSUM_INST_NAME());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_FEE_RATE(row.getSUM_FEE_RATE());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_TOT_IN(row.getSUM_TOT_IN());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_TOT_OUT(row.getSUM_TOT_OUT());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_NET_AMT(row.getSUM_NET_AMT());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_TOT_FEE(row.getSUM_TOT_FEE());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_TOT_CNT(row.getSUM_TOT_CNT());
+
+            if (SQLCODE == 0) {
+                INSERT_NET_SUMMARY(dto);
+            } else if (SQLCODE == 100) {
+                dto.getWS_FLAGSDto().setWS_JOIN_EOF_FLAG(dto.getWS_FLAGSDto().WS_JOIN_EOF);
+            } else {
+                dto.getWS_COUNTERSDto_3().setWS_ERR_CNT(SQLCODE);
+                dto.getERR_LOG_AREADto().setERR_DESCRIPTION("JOIN CURSOR FETCH ERROR");
+                DB_ERROR(dto);
+                dto.getWS_FLAGSDto().setWS_JOIN_EOF_FLAG(dto.getWS_FLAGSDto().WS_JOIN_EOF);
+            }
+        }
+
+        dto.setFetchOffset(dto.getFetchOffset() + dto.getFetchLimit());
+        if (list.size() < dto.getFetchLimit()) {
             dto.getWS_FLAGSDto().setWS_JOIN_EOF_FLAG(dto.getWS_FLAGSDto().WS_JOIN_EOF);
         }
     }
@@ -467,6 +496,7 @@ public class PGM_PHASE3 {
         dto.getDCL_TB_BATCH_LOGDto().setBLG_REMARK("PHASE3 STARTED");
         dto.getDCL_TB_BATCH_LOGDto().setBLG_ACTION("START");
 
+        PGM_BLOGSVRDto.setDCL_TB_BATCH_LOGDto(dto.getDCL_TB_BATCH_LOGDto());
         PGM_BLOGSVR.MAIN(PGM_BLOGSVRDto);
 
         if (dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE() != 0) {
@@ -489,6 +519,7 @@ public class PGM_PHASE3 {
             dto.getDCL_TB_BATCH_LOGDto().setBLG_REMARK("PHASE3 COMPLETED SUCCESSFULLY");
         }
 
+        PGM_BLOGSVRDto.setDCL_TB_BATCH_LOGDto(dto.getDCL_TB_BATCH_LOGDto());
         PGM_BLOGSVR.MAIN(PGM_BLOGSVRDto);
 
         if (dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE() != 0) {

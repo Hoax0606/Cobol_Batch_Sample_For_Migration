@@ -14,6 +14,7 @@
          FROM TB_STG_TRX
          WHERE PROC_STAT = '0'
          ORDER BY INST_CD ASC, TRX_SEQ ASC
+         LIMIT #{limit} OFFSET #{offset}
     ]]></select>
 
     <select id="select_02" parameterType="PGM_PHASE3Dto" resultType="DCL_TB_NET_SUMMARYDto"><![CDATA[
@@ -31,6 +32,7 @@
         ON D.INST_CD     = M.INST_CD
         WHERE D.SETTLE_DATE = #{DCL-TB-INST-DAILY-STAT.IDS-SETTLE-DATE}
         ORDER BY D.INST_CD  ASC
+        LIMIT #{limit} OFFSET #{offset}
     ]]></select>
 
     <select id="select_03" parameterType="PGM_PHASE3Dto" resultType="DCL_TB_INST_MASTERDto"><![CDATA[
