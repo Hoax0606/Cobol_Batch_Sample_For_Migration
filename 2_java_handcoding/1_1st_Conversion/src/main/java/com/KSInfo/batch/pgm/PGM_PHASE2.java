@@ -29,7 +29,7 @@ public class PGM_PHASE2 {
 
     private BufferedReader IN_FILE;
 
-    @Value("${batch.file.path.input}")
+    @Value("${batch.file.input}")
     private String IN_FILE_Path;
 
     @Autowired

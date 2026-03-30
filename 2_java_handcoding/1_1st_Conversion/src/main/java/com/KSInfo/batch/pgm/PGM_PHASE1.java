@@ -37,11 +37,11 @@ public class PGM_PHASE1 {
     private BufferedWriter ERR_FILE;
 
     // 설정 파일에서 경로를 읽어와 변수에 할당합니다.
-    @Value("${batch.file.path.input}")
+    @Value("${batch.file.input}")
     private String IN_FILE_Path;
-    @Value("${batch.file.path.output}")
+    @Value("${batch.file.output}")
     private String OUT_FILE_Path;
-    @Value("${batch.file.path.error}")
+    @Value("${batch.file.error}")
     private String ERR_FILE_Path;
 
     public void MAIN(PGM_PHASE1Dto dto) {
