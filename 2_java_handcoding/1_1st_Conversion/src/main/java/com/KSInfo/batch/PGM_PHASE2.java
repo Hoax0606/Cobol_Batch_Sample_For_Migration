@@ -151,17 +151,21 @@ public class PGM_PHASE2 {
     private void CHECK_INST(PGM_PHASE2Dto dto) {
         dto.getDCL_TB_INST_MASTERDto().setINST_MAST_CD(dto.getTRX_RECORDDto().getINST_CD());
 
-        dao.select_01(dto);
+        try {
+            dao.select_01(dto);
 
-        if (SQLCODE == 0) {
-            INSERT_DB(dto);
-        } else if (SQLCODE == 100) {
-            dto.getWS_COUNTERSDto().setWS_INST_SKIP_CNT(dto.getWS_COUNTERSDto().getWS_INST_SKIP_CNT() + 1);
-            log.info(" > INST NOT FOUND SKIP: [" + dto.getTRX_RECORDDto().getINST_CD() + "]");
-        } else {
-            dto.getERR_LOG_AREADto().setERR_SQLCODE(SQLCODE);
-            dto.getERR_LOG_AREADto().setERR_DESCRIPTION("INST MASTER SELECT ERROR");
-            DB_ERROR(dto);
+            if (SQLCODE == 0) {
+                INSERT_DB(dto);
+            } else if (SQLCODE == 100) {
+                dto.getWS_COUNTERSDto().setWS_INST_SKIP_CNT(dto.getWS_COUNTERSDto().getWS_INST_SKIP_CNT() + 1);
+                log.info(" > INST NOT FOUND SKIP: [" + dto.getTRX_RECORDDto().getINST_CD() + "]");
+            } else {
+                dto.getERR_LOG_AREADto().setERR_SQLCODE(SQLCODE);
+                dto.getERR_LOG_AREADto().setERR_DESCRIPTION("INST MASTER SELECT ERROR");
+                DB_ERROR(dto);
+            }
+        } catch (Exception e) {
+            
         }
     }
 
