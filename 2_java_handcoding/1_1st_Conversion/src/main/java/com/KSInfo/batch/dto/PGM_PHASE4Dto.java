@@ -32,5 +32,8 @@ public class PGM_PHASE4Dto{
     private  String WS_PHASE_ID = "PHASE4";
     private  int WS_PROGRESS_INTERVAL = 10;
 
+    private int fetchLimit = 1000;
+    private int fetchOffset = 0;
+
 }
 

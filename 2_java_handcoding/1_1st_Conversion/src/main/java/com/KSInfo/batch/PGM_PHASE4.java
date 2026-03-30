@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import javax.print.DocFlavor.STRING;
 
@@ -41,6 +42,7 @@ public class PGM_PHASE4 {
     private PGM_BLOGSVRDto PGM_BLOGSVRDto;
     public void MAIN(PGM_PHASE4Dto dto) {
         INIT(dto);
+        dto.setFetchOffset(0);
         while (!dto.getWS_FLAGSDto_2().getWS_EOF_FLAG().equals(dto.getWS_FLAGSDto_2().WS_EOF)) {
             DATA_PROCESS(dto);
         }
@@ -117,19 +119,35 @@ public class PGM_PHASE4 {
     }
 
     public void DATA_PROCESS(PGM_PHASE4Dto dto) {
-        dao.select_01(dto);
+        List<DCL_TB_NET_SUMMARYDto> list = dao.select_01(dto, dto.getFetchLimit(), dto.getFetchOffset());
 
-        if (SQLCODE == 0) {
-            WRITE_DATA(dto);
-        } else if (SQLCODE == 100) {
+        for (DCL_TB_NET_SUMMARYDto row : list) {
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_SETTLE_DATE(row.getSUM_SETTLE_DATE());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_INST_CD(row.getSUM_INST_CD());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_INST_NAME(row.getSUM_INST_NAME());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_TOT_IN(row.getSUM_TOT_IN());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_TOT_OUT(row.getSUM_TOT_OUT());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_NET_AMT(row.getSUM_NET_AMT());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_TOT_FEE(row.getSUM_TOT_FEE());
+            dto.getDCL_TB_NET_SUMMARYDto().setSUM_TOT_CNT(row.getSUM_TOT_CNT());
+
+            if (SQLCODE == 0) {
+                WRITE_DATA(dto);
+            } else if (SQLCODE == 100) {
+                dto.getWS_FLAGSDto_2().setWS_EOF_FLAG(dto.getWS_FLAGSDto_2().WS_EOF);
+            } else {
+                dto.getERR_LOG_AREADto().setERR_SQLCODE(SQLCODE);
+                dto.getERR_LOG_AREADto().setERR_DESCRIPTION("CURSOR FETCH ERROR");
+                SYSTEM_ERROR(dto);
+                dto.getSYS_COMMON_AREADto().setSYS_RET_CODE(dto.getSYS_COMMON_AREADto().BATCH_ERROR);
+                this.resultCode = dto.getSYS_COMMON_AREADto().getSYS_RET_CODE();
+                System.exit(this.resultCode);
+            }
+        }
+        
+        dto.setFetchOffset(dto.getFetchOffset() + dto.getFetchLimit());
+        if (list.size() < dto.getFetchLimit()) {
             dto.getWS_FLAGSDto_2().setWS_EOF_FLAG(dto.getWS_FLAGSDto_2().WS_EOF);
-        } else {
-            dto.getERR_LOG_AREADto().setERR_SQLCODE(SQLCODE);
-            dto.getERR_LOG_AREADto().setERR_DESCRIPTION("CURSOR FETCH ERROR");
-            SYSTEM_ERROR(dto);
-            dto.getSYS_COMMON_AREADto().setSYS_RET_CODE(dto.getSYS_COMMON_AREADto().BATCH_ERROR);
-            this.resultCode = dto.getSYS_COMMON_AREADto().getSYS_RET_CODE();
-            System.exit(this.resultCode);
         }
     }
 

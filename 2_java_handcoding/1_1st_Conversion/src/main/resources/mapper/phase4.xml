@@ -15,6 +15,7 @@
         FROM TB_NET_SUMMARY
         WHERE SETTLE_DATE = #{WS-BIZ-DATE-W}
         ORDER BY INST_CD ASC
+        LIMIT #{limit} OFFSET #{offset}
     ]]></select>
 
 </mapper>
