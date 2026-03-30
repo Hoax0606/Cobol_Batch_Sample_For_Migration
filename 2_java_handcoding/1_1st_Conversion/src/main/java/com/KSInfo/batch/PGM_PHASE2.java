@@ -1,10 +1,18 @@
 package com.KSInfo.batch;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
 
 import com.KSInfo.batch.dao.PGM_PHASE2Dao;
@@ -19,6 +27,11 @@ public class PGM_PHASE2 {
     private int SQLCODE = 0;
     private int resultCode = 0;
 
+    private BufferedReader IN_FILE;
+
+    @Value("${batch.file.path.input}")
+    private String IN_FILE_Path;
+
     @Autowired
     private PGM_PHASE2Dao dao;
 
@@ -30,9 +43,9 @@ public class PGM_PHASE2 {
 
     public void MAIN(PGM_PHASE2Dto dto) {
         INIT(dto);
-        do {
+        while(!dto.getWS_FLAGSDto_2().getWS_EOF_FLAG().equals(dto.getWS_FLAGSDto_2().WS_EOF)){
             DATA_PROCESS(dto);
-        } while(dto.getWS_FLAGSDto_2().getWS_EOF_FLAG().equals(dto.getWS_FLAGSDto_2().WS_EOF));
+        }
         FINALIZE(dto);
 
         this.resultCode = dto.getSYS_COMMON_AREADto().getSYS_RET_CODE();
@@ -60,10 +73,25 @@ public class PGM_PHASE2 {
             // CONTINUE
         }
 
-        // OPEN INPUT IN-FILE.
-
-        if (!dto.getWS_FILE_STATUSDto_2().getWS_IN_STAT().equals("00")) {
+        try{
+           IN_FILE = new BufferedReader(new FileReader(IN_FILE_Path));
+           // CONTINUE
+        } catch (Exception e){
             dto.getERR_LOG_AREADto().setERR_DESCRIPTION("INPUT FILE OPEN ERROR");
+            SYSTEM_ERROR(dto);
+            dto.getSYS_COMMON_AREADto().setSYS_RET_CODE(dto.getSYS_COMMON_AREADto().BATCH_ERROR);
+            this.resultCode = dto.getSYS_COMMON_AREADto().getSYS_RET_CODE();
+            System.exit(this.resultCode);
+        }
+
+        // EXEC SQL 
+        //     CONNECT :WS-USER IDENTIFIED BY :WS-PWD
+        //             USING :WS-DATASRC
+        // END-EXEC.
+
+        if (SQLCODE != 0) {
+            dto.getERR_LOG_AREADto().setERR_SQLCODE(SQLCODE);
+            dto.getERR_LOG_AREADto().setERR_DESCRIPTION("DB CONNECT ERROR");
             SYSTEM_ERROR(dto);
             dto.getSYS_COMMON_AREADto().setSYS_RET_CODE(dto.getSYS_COMMON_AREADto().BATCH_ERROR);
             this.resultCode = dto.getSYS_COMMON_AREADto().getSYS_RET_CODE();
@@ -71,23 +99,6 @@ public class PGM_PHASE2 {
         } else {
             // CONTINUE
         }
-        
-
-        // EXEC SQL 
-        //     CONNECT :WS-USER IDENTIFIED BY :WS-PWD
-        //             USING :WS-DATASRC
-        // END-EXEC.
-
-        // IF SQLCODE NOT = 0 THEN
-        //     MOVE SQLCODE           TO ERR-SQLCODE
-        //     MOVE 'DB CONNECT ERROR' TO ERR-DESCRIPTION
-        //     PERFORM SYSTEM-ERROR-000
-        //     SET BATCH-ERROR TO TRUE
-        //     MOVE SYS-RET-CODE TO RETURN-CODE
-        //     STOP RUN
-        // ELSE
-        //     CONTINUE
-        // END-IF.
 
         BATCHLOG_START(dto);
 
@@ -98,9 +109,6 @@ public class PGM_PHASE2 {
     }
 
     private void DATA_PROCESS(PGM_PHASE2Dto dto){
-        // INSPECT IN-REC
-        //        CONVERTING 'abcdefghijklmnopqrstuvwxyz'
-        //                TO 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.
         StringBuilder sb = new StringBuilder(dto.getIN_REC());
         for (int i = 0; i < sb.length(); i++) {
             int idx = "abcdefghijklmnopqrstuvwxyz".indexOf(sb.charAt(i));
@@ -110,7 +118,7 @@ public class PGM_PHASE2 {
         }
         dto.setIN_REC(sb.toString());
 
-        // MOVE IN-REC TO FILE-CONTROL-REC.
+        dto.setFILE_CONTROL_REC(dto.getIN_REC());
 
         if (dto.getFILE_CONTROL_RECDto().getREC_TYPE().equals("H")) {
             dto.getWS_COUNTERSDto().setWS_SKIP_CNT(dto.getWS_COUNTERSDto().getWS_SKIP_CNT() + 1);
@@ -119,7 +127,7 @@ public class PGM_PHASE2 {
             dto.getWS_COUNTERSDto().setWS_SKIP_CNT(dto.getWS_COUNTERSDto().getWS_SKIP_CNT() + 1);
             log.info(" > TRAILER RECORD SKIPPED");
         } else {
-            // MOVE IN-REC TO FILE-CONTROL-REC.
+            dto.setFILE_CONTROL_RECDto(dto.getIN_REC());
             CHECK_INST(dto);
         }
 
@@ -127,12 +135,17 @@ public class PGM_PHASE2 {
     }
 
     private void READ_IN_FILE(PGM_PHASE2Dto dto) {
-        // READ IN-FILE
-        //     AT END
-        //         SET WS-EOF         TO TRUE
-        //     NOT AT END
-        //         ADD 1              TO WS-READ-CNT
-        // END-READ.
+        try {
+            String line = IN_FILE.readLine();
+            if (line == null) {
+                dto.getWS_FLAGSDto_2().setWS_EOF_FLAG(dto.getWS_FLAGSDto_2().WS_EOF);
+            } else {
+                dto.setIN_REC(line);
+                dto.getWS_COUNTERSDto().setWS_READ_CNT(dto.getWS_COUNTERSDto().getWS_READ_CNT() + 1);
+            }
+        } catch (Exception e) {
+            
+        }
     }
 
     private void CHECK_INST(PGM_PHASE2Dto dto) {
@@ -177,7 +190,7 @@ public class PGM_PHASE2 {
                 DB_ERROR(dto);
             }
         } catch (Exception e) {
-
+            
         }
 
         if (dto.getWS_COUNTERSDto().getWS_COMMIT_CNT() >= dto.getWS_COMMIT_INTERVAL()) {
@@ -200,7 +213,11 @@ public class PGM_PHASE2 {
             // CONTINUE
         }
 
-        // CLOSE IN-FILE.
+        try {
+            if (IN_FILE != null) IN_FILE.close();
+        } catch (IOException e) {
+            
+        }
 
         BATCHLOG_END(dto);
         // EXEC SQL COMMIT            END-EXEC.
@@ -243,7 +260,7 @@ public class PGM_PHASE2 {
         PGM_BLOGSVR.MAIN(PGM_BLOGSVRDto);
 
         if (dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE() != 0) {
-            log.info(" > [WARN] BLOGSVR END FAILED. RC=" + dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE());
+            log.info("> [WARN] BLOGSVR START FAILED. RC=" + dto.getDCL_TB_BATCH_LOGDto().getBLG_RETURN_CODE());
         } else {
             // CONTINUE
         }
