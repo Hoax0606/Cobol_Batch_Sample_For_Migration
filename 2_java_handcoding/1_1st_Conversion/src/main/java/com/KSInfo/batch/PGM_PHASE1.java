@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,19 +16,20 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+
 import com.KSInfo.batch.dto.PGM_PHASE1Dto;
+import com.KSInfo.batch.dto.PGM_BLOGSVRDto;
+import com.KSInfo.batch.dto.SORT_RECDto;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PGM_PHASE1 {
-    //!! 삭제?
-    // @Autowired
-    // private PGM_BLOGSVR PGM_BLOGSVR;
 
-    // @Autowired
-    // private PGM_BLOGSVRDto PGM_BLOGSVRDto;
-    //----------------------------------------------
+    @Autowired
+    private PGM_BLOGSVR PGM_BLOGSVR;
+    @Autowired
+    private PGM_BLOGSVRDto PGM_BLOGSVRDto;
 
     // 파일 핸들 (클래스 레벨)
     private BufferedReader IN_FILE;
@@ -132,13 +134,13 @@ public class PGM_PHASE1 {
         }
     
     private void INPUT_PROC(PGM_PHASE1Dto dto) {
-        dto.getWS_FLAGsDto_1().setWS_EOF_FLAG("N");
+        dto.getWS_FLAGSDto_1().setWS_EOF_FLAG("N");
         // READ IN-FILE AT END MOVE 'Y' TO WS-EOF-FLAG
             //BufferedReader.readLine()은 IOException을 throws하도록 선언되어 있어서, Java 컴파일러가 반드시 try-catch 또는 throws 선언을 요구합니다.
          try {
             String line = IN_FILE.readLine();
             if (line == null) { // 파일 끝에 도달 했는가
-                dto.getWS_FLAGsDto_1().setWS_EOF_FLAG("Y");
+                dto.getWS_FLAGSDto_1().setWS_EOF_FLAG("Y");
             } else {
                 dto.setIN_REC(line);
             }
@@ -147,11 +149,11 @@ public class PGM_PHASE1 {
             // COBOL 원본에 없는 처리(클로드가 임의로 작성해준것 - 코볼 소스에는 없음)
             // dto.getERR_LOG_AREADto().setERR_DESCRIPTION("INPUT FILE READ ERROR");
             // ERROR_LOG(dto);
-            // dto.getWS_FLAGsDto_1().setWS_EOF_FLAG("Y");
+            // dto.getWS_FLAGSDto_1().setWS_EOF_FLAG("Y");
 
          }
 
-        while (!dto.getWS_FLAGsDto_1().getWS_EOF_FLAG().equals(dto.getWS_FLAGsDto_1().WS_EOF)) {
+        while (!dto.getWS_FLAGSDto_1().getWS_EOF_FLAG().equals(dto.getWS_FLAGSDto_1().WS_EOF)) {
         INPUT_PROC_LOOP(dto);
     }
     
@@ -175,26 +177,26 @@ public class PGM_PHASE1 {
 
         String line = IN_FILE.readLine();
         if (line == null) {
-            dto.getWS_FLAGsDto_1().setWS_EOF_FLAG("Y");
+            dto.getWS_FLAGSDto_1().setWS_EOF_FLAG("Y");
         } else {
             dto.setIN_REC(line);
         }
     }
 
     private void OUTPUT_PROC(PGM_PHASE1Dto dto) {
-        dto.getWS_FLAGsDto_1().setWS_SORT_EOF_FLAG("N");
+        dto.getWS_FLAGSDto_1().setWS_SORT_EOF_FLAG("N");
 
         // !! 나중에 다시보기
         // RETURN SORT-FILE
         //SORT RETURN → sortList에서 iterator로 대체 (나중에 처리)
             //  현재는 sortList가 비어있으면 EOF로 처리
         if (dto.getSortList() == null || dto.getSortList().isEmpty()) { // 정렬된 리스트가 비어있는가
-            dto.getWS_FLAGsDto_1().setWS_SORT_EOF_FLAG("Y");
+            dto.getWS_FLAGSDto_1().setWS_SORT_EOF_FLAG("Y");
         } else {
             continue;
         }
 
-        while (!dto.getWS_FLAGsDto_1().getWS_SORT_EOF_FLAG().equals(dto.getWS_FLAGsDto_1().SORT_EOF_FLAG)) {
+        while (!dto.getWS_FLAGSDto_1().getWS_SORT_EOF_FLAG().equals(dto.getWS_FLAGSDto_1().SORT_EOF_FLAG)) {
             OUTPUT_PROC_LOOP(dto);
         }
     }
@@ -237,7 +239,7 @@ public class PGM_PHASE1 {
             // SORT RETURN → sortList에서 다음 요소 꺼내기 (나중에 처리)
             // 더 꺼낼 요소가 없으면 EOF로 처리
             // if (더 이상 요소 없음) {
-            //     dto.getWS_FLAGsDto_1().setWS_SORT_EOF_FLAG("Y");
+            //     dto.getWS_FLAGSDto_1().setWS_SORT_EOF_FLAG("Y");
             // }
 
     }
@@ -280,8 +282,8 @@ public class PGM_PHASE1 {
 
     private void VALIDATE_DATA(PGM_PHASE1Dto dto) {
         // SET WS-VALID TO TRUE
-        //!! getWS_FLAGsDto_1에 기존거 추가 해야함(PHAE1 관련 변수 다 없어짐)
-        dto.getWS_FLAGsDto_1().setWS_VALID_FLAG(dto.getWS_FLAGsDto_1().WS_VALID);
+        //!! getWS_FLAGSDto_1에 기존거 추가 해야함(PHAE1 관련 변수 다 없어짐)
+        dto.getWS_FLAGSDto_1().setWS_VALID_FLAG(dto.getWS_FLAGSDto_1().WS_VALID);
 
         dto.getTRX_RECORDDto().setTRX_RECORD(dto.getIN_REC());
         dto.setWS_INSPECT_CNT(0);
@@ -361,7 +363,7 @@ public class PGM_PHASE1 {
 
     private void VALIDATE_ERR_FIELD(PGM_PHASE1Dto dto) {
 
-        dto.getWS_FLAGsDto_1().setWS_VALID_FLAG(dto.getWS_FLAGsDto_1().WS_INVALID);
+        dto.getWS_FLAGSDto_1().setWS_VALID_FLAG(dto.getWS_FLAGSDto_1().WS_INVALID);
 
         dto.getWS_CALC_TOTALSDto().setWS_ERR_CNT(
             dto.getWS_CALC_TOTALSDto().getWS_ERR_CNT() + 1
@@ -382,7 +384,7 @@ public class PGM_PHASE1 {
     }
     private void VALIDATE_ERR_AMT(PGM_PHASE1Dto dto) {
 
-        dto.getWS_FLAGsDto_1().setWS_VALID_FLAG(dto.getWS_FLAGsDto_1().WS_INVALID);
+        dto.getWS_FLAGSDto_1().setWS_VALID_FLAG(dto.getWS_FLAGSDto_1().WS_INVALID);
         dto.getWS_CALC_TOTALSDto().setWS_ERR_CNT(
             dto.getWS_CALC_TOTALSDto().getWS_ERR_CNT() + 1
         );
@@ -406,7 +408,7 @@ public class PGM_PHASE1 {
     }
     private void VALIDATE_ERR_SEQ(PGM_PHASE1Dto dto) {
 
-        dto.getWS_FLAGsDto_1().setWS_VALID_FLAG(dto.getWS_FLAGsDto_1().WS_INVALID);
+        dto.getWS_FLAGSDto_1().setWS_VALID_FLAG(dto.getWS_FLAGSDto_1().WS_INVALID);
         dto.getWS_CALC_TOTALSDto().setWS_ERR_CNT(
             dto.getWS_CALC_TOTALSDto().getWS_ERR_CNT() + 1
         );
@@ -423,7 +425,7 @@ public class PGM_PHASE1 {
     }
     private void VALIDATE_ERR_TYPE(PGM_PHASE1Dto dto) {
 
-        dto.getWS_FLAGsDto_1().setWS_VALID_FLAG(dto.getWS_FLAGsDto_1().WS_INVALID);
+        dto.getWS_FLAGSDto_1().setWS_VALID_FLAG(dto.getWS_FLAGSDto_1().WS_INVALID);
         dto.getWS_CALC_TOTALSDto().setWS_ERR_CNT(
             dto.getWS_CALC_TOTALSDto().getWS_ERR_CNT() + 1
         );
@@ -442,7 +444,7 @@ public class PGM_PHASE1 {
     private void VALIDATE_ERR_INST(PGM_PHASE1Dto dto) {
 
         // SET WS-INVALID TO TRUE
-        dto.getWS_FLAGsDto_1().setWS_VALID_FLAG(dto.getWS_FLAGsDto_1().WS_INVALID);
+        dto.getWS_FLAGSDto_1().setWS_VALID_FLAG(dto.getWS_FLAGSDto_1().WS_INVALID);
 
         // ADD 1 TO WS-ERR-CNT
         dto.getWS_CALC_TOTALSDto().setWS_ERR_CNT(
@@ -468,7 +470,7 @@ public class PGM_PHASE1 {
     private void VALIDATE_ERR_ACC(PGM_PHASE1Dto dto) {
 
         // SET WS-INVALID TO TRUE
-        dto.getWS_FLAGsDto_1().setWS_VALID_FLAG(dto.getWS_FLAGsDto_1().WS_INVALID);
+        dto.getWS_FLAGSDto_1().setWS_VALID_FLAG(dto.getWS_FLAGSDto_1().WS_INVALID);
 
         // ADD 1 TO WS-ERR-CNT
         dto.getWS_CALC_TOTALSDto().setWS_ERR_CNT(
@@ -494,7 +496,7 @@ public class PGM_PHASE1 {
     private void VALIDATE_ERR_CTRL_CHAR(PGM_PHASE1Dto dto) {
 
         // SET WS-INVALID TO TRUE
-        dto.getWS_FLAGsDto_1().setWS_VALID_FLAG(dto.getWS_FLAGsDto_1().WS_INVALID);
+        dto.getWS_FLAGSDto_1().setWS_VALID_FLAG(dto.getWS_FLAGSDto_1().WS_INVALID);
 
         // ADD 1 TO WS-ERR-CNT
         dto.getWS_CALC_TOTALSDto().setWS_ERR_CNT(
@@ -519,7 +521,7 @@ public class PGM_PHASE1 {
     private void VALIDATE_ERR_OVERFLOW(PGM_PHASE1Dto dto) {
 
         // SET WS-INVALID TO TRUE
-        dto.getWS_FLAGsDto_1().setWS_VALID_FLAG(dto.getWS_FLAGsDto_1().WS_INVALID);
+        dto.getWS_FLAGSDto_1().setWS_VALID_FLAG(dto.getWS_FLAGSDto_1().WS_INVALID);
 
         // ADD 1 TO WS-ERR-CNT
         dto.getWS_CALC_TOTALSDto().setWS_ERR_CNT(
@@ -613,7 +615,7 @@ public class PGM_PHASE1 {
     }
     private void ERROR_LOG(PGM_PHASE1Dto dto) {
         dto.getERR_LOG_AREADto().setERR_PGM_ID(dto.getWS_PROG_NAME());
-        dto.getERR_LOG_AREADto().setERR_LEVEL(dto.getERR_LOG_AREADto().ERR_FATAL);
+        dto.getERR_LOG_AREADto().setERR_SEVERITY(dto.getERR_LOG_AREADto().ERR_FATAL);
         log.info("*** SYSTEM ERROR OCCURRED ***");
         log.info("PGM: " + dto.getERR_LOG_AREADto().getERR_PGM_ID()
                 + " | MSG: " + dto.getERR_LOG_AREADto().getERR_DESCRIPTION());
