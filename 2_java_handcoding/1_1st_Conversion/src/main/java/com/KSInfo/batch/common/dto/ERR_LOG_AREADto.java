@@ -1,8 +1,6 @@
-package com.KSInfo.batch.dto;
+package com.KSInfo.batch.common.dto;
 
 import lombok.Data;
-import java.util.Arrays;
-import java.util.Objects;
 
 @Data
 public class ERR_LOG_AREADto {

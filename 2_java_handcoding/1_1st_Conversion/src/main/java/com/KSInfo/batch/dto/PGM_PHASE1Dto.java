@@ -3,6 +3,8 @@ package com.KSInfo.batch.dto;
 import lombok.Data;
 import java.math.BigDecimal;
 
+import com.KSInfo.batch.common.dto.*;
+
 @Data
 public class PGM_PHASE1Dto{
     private String IN_REC = "";

@@ -1,5 +1,7 @@
 package com.KSInfo.batch.dto;
 
+import com.KSInfo.batch.common.dto.*;
+
 import lombok.Data;
 
 @Data

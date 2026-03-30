@@ -1,4 +1,4 @@
-package com.KSInfo.batch;
+package com.KSInfo.batch.pgm;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
