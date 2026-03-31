@@ -6,12 +6,12 @@ import java.math.BigDecimal;
 @Data
 public class DCL_TB_BATCH_LOGDto {
 
-    private String BLG_ACTION = "";
-    private String BLG_PGM_ID = "";
-    private String BLG_BIZ_DATE = "";
-    private String BLG_START_DT = "";
-    private String BLG_END_DT = "";
-    private String BLG_STAT = "";
+    private String BLG_ACTION;
+    private String BLG_PGM_ID;
+    private String BLG_BIZ_DATE;
+    private String BLG_START_DT;
+    private String BLG_END_DT;
+    private String BLG_STAT;
     private long BLG_PROC_CNT = 0L;
     private long BLG_ERR_CNT = 0L;
     private String BLG_REMARK = "";
@@ -25,5 +25,19 @@ public class DCL_TB_BATCH_LOGDto {
     // 88 BATCH-ERROR VALUE 'END'
     public static final String BLG_END  = "END";
     public boolean checkBLG_END () { return BLG_ACTION == BLG_END ; }
+
+    public void init() {
+        this.BLG_ACTION = "";
+        this.BLG_PGM_ID = "";
+        this.BLG_BIZ_DATE = "";
+        this.BLG_START_DT = "";
+        this.BLG_END_DT = "";
+        this.BLG_STAT = "";
+        this.BLG_PROC_CNT = 0L;
+        this.BLG_ERR_CNT = 0L;
+        this.BLG_REMARK = "";
+        this.BLG_BATCH_ID = BigDecimal.ZERO;
+        this.BLG_RETURN_CODE = 0;
+    }
     
 }
